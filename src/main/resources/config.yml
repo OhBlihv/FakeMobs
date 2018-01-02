@@ -1,0 +1,25 @@
+#FakeMobs Configuration File
+#--------------------------------
+
+mobs:
+    "example-villager":
+        location:
+            world: world
+            x: 18.5
+            y: 71
+            z: 8.5
+            yaw: 180
+            pitch: 0
+        type: SIMPLE_MOB
+        options:
+            mob-type: VILLAGER
+        actions:
+            LEFT_CLICK:
+                SOUND:
+                    sound: ENTITY_VILLAGER_HURT
+                    #Can be lowered to reduce sound spam
+                    chance: 25
+            RIGHT_CLICK:
+                COMMAND:
+                    "say {player} has interacted with me! Thanks!":
+                        execute-as: CONSOLE

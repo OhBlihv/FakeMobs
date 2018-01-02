@@ -1,0 +1,20 @@
+*.class
+.settings
+.classpath
+bin
+.project
+.idea
+*.iml
+.externalToolBuilders
+build.xml
+.DS_Store
+dependency-reduced-pom.xml
+
+# Package Files #
+*.war
+*.ear
+
+**/target/**
+
+dependency-reduced-pom.xml
+/lib/spigot*
