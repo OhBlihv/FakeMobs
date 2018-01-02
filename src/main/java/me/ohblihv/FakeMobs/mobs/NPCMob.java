@@ -28,6 +28,12 @@ public class NPCMob extends BaseMob
 	private final String displayName;
 
 	@Getter
+	private final String skinUUID;
+
+	@Getter
+	private final String skinName;
+
+	@Getter
 	private final NPCProfile profile;
 
 	@Getter
@@ -47,6 +53,36 @@ public class NPCMob extends BaseMob
 		}
 
 		profile = new NPCProfile(displayName);
+
+		{
+			String skinUUID = null;
+			String skinName = null;
+			if(configurationSection.isString("options.skin"))
+			{
+				skinName = configurationSection.getString("options.skin");
+				skinUUID = SkinHandler.getUUIDForSkin(skinName);
+
+				if(skinUUID == null)
+				{
+					BUtil.log("Skin '" + configurationSection.getString("options.skin", "default") + "' not found.");
+				}
+			}
+
+			if(skinUUID == null)
+			{
+				BUtil.log("No Skin defined for " + displayName);
+
+				skinName = getProfile().getId().toString();
+			}
+
+			if(skinName == null)
+			{
+				skinName = displayName;
+			}
+
+			this.skinName = skinName;
+			this.skinUUID = skinUUID;
+		}
 
 		setEntityType(EntityType.PLAYER);
 
@@ -77,7 +113,7 @@ public class NPCMob extends BaseMob
 	@Override
 	public void spawnMob(Player player)
 	{
-		Property cached = SkinHandler.getSkin(profile.getId().toString());
+		Property cached = SkinHandler.getSkin(skinName);
 		if (cached != null)
 		{
 			BUtil.log("Adding skin properties for " + profile.getId());
@@ -89,7 +125,7 @@ public class NPCMob extends BaseMob
 		else
 		{
 			BUtil.log("Retrieving skin for " + profile.getId());
-			SkinFetcher.SKIN_THREAD.addRunnable(new SkinFetcher(() -> profile.getId().toString(),
+			SkinFetcher.SKIN_THREAD.addRunnable(new SkinFetcher(skinUUID,
 					((CraftWorld) getMobWorld()).getHandle().getMinecraftServer().aD(), this));
 		}
 

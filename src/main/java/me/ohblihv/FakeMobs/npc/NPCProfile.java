@@ -1,5 +1,6 @@
 package me.ohblihv.FakeMobs.npc;
 
+import com.google.common.base.Charsets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.apache.commons.lang.StringUtils;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 /**
  * NPCProfile represents GameProfile in a more easy-to-use way.
- * You mway want to construct this in async tasks.
+ * You may want to construct this in async tasks.
  *
  * @author lenis0012
  */
@@ -52,19 +53,11 @@ public class NPCProfile extends GameProfile
 	public NPCProfile(String name)
 	{
 		this();
-		//this.uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
+		this.uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
 		this.name = name;
 
-		this.uuid = UUID.fromString("18c78090-c1bb-4eb6-972a-a52dd1899367");
-
-		//addProperties(this, this.uuid);
-
-		//getProperties().put("textures", new Property("textures", Base64.getEncoder().encodeToString(("{textures:{SKIN:{url:\"" + "http://textures.minecraft.net/texture/aa7551e0d2a214c76494170e226aa9d34d7572084cbf7dc7ba89174313e27dc" + "\"}}}").getBytes()), "signed"));
-
-		/*getProperties().put("textures", new Property("textures",
-				"eyJ0aW1lc3RhbXAiOjE1MTQ0NTEzNzAwODMsInByb2ZpbGVJZCI6ImRhNzQ2NWVkMjljYjRkZTA5MzRkOTIwMTc0NDkxMzU1IiwicHJvZmlsZU5hbWUiOiJEYW5jaW5nRG9nZ29fIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9hYTc1NTFlMGQyYTIxNGM3NjQ5NDE3MGUyMjZhYTlkMzRkNzU3MjA4NGNiZjdkYzdiYTg5MTc0MzEzZTI3ZGMifX19",
-				"qK3AsapvJKiMwEl1bUbPD81GZJBv7YAQtCLSqKp3/kfbZ62QMbhJIHVQv4JKisb8WjafXVewtOZ+4YGb6XLkMWVH/sDQO3MOwjgPeqKf78rSOWyQRX93VPZUoP8SrmIcH5q5thuPG8hHD5B9eTfsHWxX6lWzlpLiL8czJ4J06eNigWbUNmrM121kCuZR3Ufg3uCXhbu7rgf0Yik3HMF9BgbVflFh7JKUJIyCqccu16TpVjcuhHHO6OgF1UCeS0yuOxXn8j79Ha/zhmNNpr8pwrfxWoht6TjRYvELE0A9XADciQkKqsUirNrDlCwxs929y+mDNYF+iPUaAFR6BoAkDRM1mU7pW67i8p2M7o/emBgiRozGsxP2ZSBhHmbb5fuyKIR4VloYpcxFKxKxSVa9Y2FUEicXwhBZzVwpZ8OZvubdIsrhj9L7uHBjP/2rpyOeWS4HCGwBjqNE+fY753HDLck5+2ZpANlJokIG9jLxnIDxspaahZ/ST2zsL5ZCYmVXyV/u3SpW++n9qOsXZ+2rrSKeKFW+u+Svt+Abwz2vntMVFAQ0XQlxpHVnFy/PLo/kK73cElZk/Ba+247ZQ4Gt4FB75JHjCfv8vfvEJWM5n3ActWljYcooXMgoyJpOmfszUNm7DxjzIjEIbiweiVZEohI+uyEscQsuhMKiDoiT5Yg="));
-	*/
+		//TODO: Return this to a randomised UUID
+		//this.uuid = UUID.fromString("18c78090-c1bb-4eb6-972a-a52dd1899367");
 	}
 
 	/**
@@ -116,62 +109,6 @@ public class NPCProfile extends GameProfile
 		this.name = name;
 		//addProperties(this, skinUUID);
 	}
-
-	/*private static void addProperties(GameProfile profile, UUID id)
-	{
-		String uuid = id.toString().replaceAll("-", "");
-		try
-		{
-			// Get the name from SwordPVP
-			//URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
-			URL url = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + Bukkit.getPlayer("OhBlihv").getUniqueId().toString().replaceAll("-", ""));
-			URLConnection uc = url.openConnection();
-			uc.setUseCaches(false);
-			uc.setDefaultUseCaches(false);
-			uc.addRequestProperty("User-Agent", "Mozilla/5.0");
-			uc.addRequestProperty("Cache-Control",
-					"no-cache, no-store, must-revalidate");
-			uc.addRequestProperty("Pragma", "no-cache");
-
-			// Parse it
-			Scanner scanner = new Scanner(uc.getInputStream(), "UTF-8");
-			String json = scanner.useDelimiter("\\A").next();
-			scanner.close();
-			JSONParser parser = new JSONParser();
-			Object obj = parser.parse(json);
-			JSONArray properties = (JSONArray) ((JSONObject) obj).get("properties");
-			for(Object property1 : properties)
-			{
-				try
-				{
-					BUtil.log(property1.toString());
-
-					JSONObject property = (JSONObject) property1;
-					String name = (String) property.get("name");
-					String value = (String) property.get("value");
-					String signature = property.containsKey("signature")
-							? (String) property.get("signature")
-							: null;
-					if(signature != null)
-					{
-						profile.getProperties().put(name, new Property(name, value, signature));
-					}
-					else
-					{
-						profile.getProperties().put(name, new Property(value, name));
-					}
-				}
-				catch(Exception e)
-				{
-					Bukkit.getLogger().log(Level.WARNING, "Failed to apply auth property", e);
-				}
-			}
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-	}*/
 
 	@SuppressWarnings("deprecation")
 	private static String getUUID(String name)

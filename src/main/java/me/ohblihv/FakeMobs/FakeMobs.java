@@ -20,7 +20,9 @@ public class FakeMobs extends JavaPlugin
 	public void onEnable()
 	{
 		instance = this;
-		
+
+		SkinHandler.load();
+
 		MobManager.init();
 		EntityListener.init();
 		getServer().getPluginManager().registerEvents(new PlayerListener(), this);
@@ -29,10 +31,32 @@ public class FakeMobs extends JavaPlugin
 	@Override
 	public void onDisable()
 	{
-		MobManager.destruct();
-		EntityListener.destruct();
+		try
+		{
+			MobManager.destruct();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 
-		SkinHandler.save();
+		try
+		{
+			EntityListener.destruct();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		try
+		{
+			SkinHandler.save();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 }

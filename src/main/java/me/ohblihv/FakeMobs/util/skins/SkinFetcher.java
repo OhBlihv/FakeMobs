@@ -18,7 +18,6 @@ import org.bukkit.Bukkit;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 public class SkinFetcher implements Runnable
 {
@@ -47,11 +46,11 @@ public class SkinFetcher implements Runnable
 	@Getter
 	private final NPCMob npc;
 	private final MinecraftSessionService repo;
-	private final Callable<String> uuid;
+	private final String skinUUID;
 
-	public SkinFetcher(Callable<String> uuid, MinecraftSessionService repo, NPCMob npc)
+	public SkinFetcher(String skinUUID, MinecraftSessionService repo, NPCMob npc)
 	{
-		this.uuid = uuid;
+		this.skinUUID = skinUUID;
 		this.repo = repo;
 		this.npc = npc;
 	}
@@ -77,28 +76,19 @@ public class SkinFetcher implements Runnable
 	@Override
 	public void run()
 	{
-		String realUUID;
-		try
-		{
-			realUUID = uuid.call();
-		}
-		catch (Exception e)
-		{
-			return;
-		}
 		GameProfile skinProfile;
-		Property cached = SkinHandler.getSkin(realUUID);
+		Property cached = SkinHandler.getSkinByUuid(skinUUID);
 		if (cached != null)
 		{
 			BUtil.log("Using cached skin texture for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
-			skinProfile = new GameProfile(UUID.fromString(realUUID), "");
+			skinProfile = new GameProfile(UUID.fromString(skinUUID), "");
 			skinProfile.getProperties().put("textures", cached);
 		}
 		else
 		{
 			try
 			{
-				skinProfile = fillProfileProperties(((YggdrasilMinecraftSessionService) repo).getAuthenticationService(), new GameProfile(UUID.fromString(realUUID), ""), true);
+				skinProfile = fillProfileProperties(((YggdrasilMinecraftSessionService) repo).getAuthenticationService(), new GameProfile(UUID.fromString(skinUUID), ""), true);
 			}
 			catch (Exception e)
 			{
@@ -121,8 +111,8 @@ public class SkinFetcher implements Runnable
 				return;
 			}
 
-			BUtil.log("Fetched skin texture for UUID " + realUUID + " for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
-			SkinHandler.addSkin(realUUID, new Property("textures", textures.getValue(), textures.getSignature()));
+			BUtil.log("Fetched skin texture for UUID " + skinUUID + " for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
+			SkinHandler.addSkin(npc.getSkinName(), new Property("textures", textures.getValue(), textures.getSignature()));
 		}
 
 		//Update Skin
