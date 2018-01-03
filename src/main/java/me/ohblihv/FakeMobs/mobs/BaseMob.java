@@ -31,10 +31,8 @@ public abstract class BaseMob
 
 	static final Random rand = new Random();
 
-    //private CopyOnWriteArraySet<Player> nearbyPlayers = new CopyOnWriteArraySet<>();
-	private ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
-
-	//private CopyOnWriteArrayList<Projectile> nearbyProjectiles = new CopyOnWriteArrayList<>();
+	@Getter
+    private final ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
 
 	@Getter
 	private int viewDistance = 30;
@@ -109,22 +107,24 @@ public abstract class BaseMob
 		Location bukkitLocation = mobLocation;
 		for(Player player : Bukkit.getOnlinePlayers())
 		{
+			if(MobManager.isIgnoredPlayer(player.getName()))
+			{
+				continue; //Don't initialize while the player cannot see.
+			}
+
 			boolean inRange = true;
 
 			Location playerLocation = player.getLocation();
 
-			if(playerLocation.getWorld() != bukkitLocation.getWorld())
-			{
-				inRange = false;
-			}
-			//If boss is in view distance of the player, make sure to add this player to the nearbyPlayers collection
-			else if(bukkitLocation.distance(playerLocation) > viewDistance)
+			if( !player.isOnline() ||
+				playerLocation.getWorld() != bukkitLocation.getWorld() ||
+				//If mob is in view distance of the player, make sure to add this player to the nearbyPlayers collection
+				bukkitLocation.distance(playerLocation) > viewDistance)
 			{
 				inRange = false;
 			}
 
 			//Create this for insertion and contains checks
-			//CheapPlayer cheapPlayer = StaticNMS.getCheapPlayerFactoryInstance().getCheapPlayer(player);
 			if(inRange)
 			{
 				//Mob is already spawned for player
@@ -170,11 +170,6 @@ public abstract class BaseMob
 			}
 		}).runTaskLater(10);
 	}
-
-	public Location getLocation()
-	{
-		return mobLocation;
-	}
 	
 	public boolean isAtLocation(int chunkX, int chunkZ)
 	{
@@ -216,6 +211,11 @@ public abstract class BaseMob
 		{
 			action.doAction(player);
 		}
+	}
+
+	public void onTick(int tick)
+	{
+
 	}
 
 }

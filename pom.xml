@@ -47,6 +47,12 @@
 			<version>4.3.0</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.arkhamnetwork</groupId>
+			<artifactId>Arkkit</artifactId>
+			<version>1.0</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>us.myles</groupId>

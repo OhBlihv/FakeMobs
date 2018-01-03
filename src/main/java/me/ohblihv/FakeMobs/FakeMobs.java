@@ -1,5 +1,6 @@
 package me.ohblihv.FakeMobs;
 
+import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.Getter;
 import me.ohblihv.FakeMobs.management.EntityListener;
 import me.ohblihv.FakeMobs.management.MobManager;
@@ -23,9 +24,11 @@ public class FakeMobs extends JavaPlugin
 
 		SkinHandler.load();
 
-		MobManager.init();
 		EntityListener.init();
 		getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+
+		//Initialize mobs when all worlds are initialized
+		RunnableShorthand.forPlugin(this).with(MobManager::init).runNextTick();
 	}
 	
 	@Override

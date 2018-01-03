@@ -1,10 +1,15 @@
 package me.ohblihv.FakeMobs.management;
 
+import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
+import com.skytonia.SkyCore.util.RunnableShorthand;
+import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener
@@ -20,6 +25,44 @@ public class PlayerListener implements Listener
 			{
 				((NPCMob) mob).removeInitializedPlayer(player);
 			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event)
+	{
+		handleIntermediatePlayer(event.getPlayer(), 10);
+	}
+
+	@EventHandler
+	public void onPlayerScoreboardChange(PlayerChangedWorldEvent event)
+	{
+		handleIntermediatePlayer(event.getPlayer(), 10);
+	}
+
+	public static void handleIntermediatePlayer(Player player, int delay)
+	{
+		if(MobManager.isUsedWorld(player.getWorld().getName()))
+		{
+			MobManager.addIgnoredPlayer(player.getName());
+
+			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
+			{
+				MobManager.removeIgnoredPlayer(player.getName());
+			}).runTaskLater(delay);
+
+			//
+
+			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
+			{
+				WrapperPlayServerScoreboardTeam teamPacket = new WrapperPlayServerScoreboardTeam();
+				teamPacket.setNameTagVisibility("never");
+				teamPacket.setMode(0);
+				teamPacket.setName("NPC-TEAM");
+				teamPacket.setPrefix("§8[NPC] ");
+
+				teamPacket.sendPacket(player);
+			}).runTaskASync(delay / 2);
 		}
 	}
 

@@ -21,7 +21,7 @@ public class PacketUtil_1_12_R1 implements IPacketUtil
 		spawnPacket.setEntityID(baseMob.getEntityId());
 		spawnPacket.setType(baseMob.getEntityType());
 		
-		Location spawnLocation = baseMob.getLocation();
+		Location spawnLocation = baseMob.getMobLocation();
 		spawnPacket.setX((int) spawnLocation.getX());
 		spawnPacket.setY((int) spawnLocation.getY());
 		spawnPacket.setZ((int) spawnLocation.getZ());

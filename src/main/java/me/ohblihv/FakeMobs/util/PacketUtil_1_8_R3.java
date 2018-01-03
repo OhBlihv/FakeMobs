@@ -1,8 +1,10 @@
 package me.ohblihv.FakeMobs.util;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
+import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
 import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import net.minecraft.server.v1_8_R3.PacketPlayOutNamedEntitySpawn;
@@ -11,6 +13,7 @@ import net.minecraft.server.v1_8_R3.PlayerConnection;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Created by Chris Brown (OhBlihv) on 8/20/2017.
@@ -25,7 +28,7 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 		spawnPacket.setEntityID(baseMob.getEntityId());
 		spawnPacket.setType(baseMob.getEntityType());
 		
-		Location spawnLocation = baseMob.getLocation();
+		Location spawnLocation = baseMob.getMobLocation();
 		spawnPacket.setX((int) spawnLocation.getX());
 		spawnPacket.setY((int) spawnLocation.getY());
 		spawnPacket.setZ((int) spawnLocation.getZ());
@@ -95,18 +98,47 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 	{
 		PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
 
-		playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-				PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER,
-				npcMob.getFakeEntityPlayer()));
+		PacketPlayOutPlayerInfo infoPacket = new PacketPlayOutPlayerInfo(
+			PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER,
+			npcMob.getFakeEntityPlayer());
+
+		playerConnection.sendPacket(infoPacket);
 
 		playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn(npcMob.getFakeEntityPlayer()));
 
-		/*RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
+		new BukkitRunnable()
 		{
-			playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-					PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER,
-					npcMob.getFakeEntityPlayer()));
-		}).runTaskASync(2);*/
+
+			int tick = 0;
+
+			@Override
+			public void run()
+			{
+				if(tick == 0)
+				{
+					playerConnection.sendPacket(infoPacket);
+				}
+
+				WrapperPlayServerScoreboardTeam teamPacket = new WrapperPlayServerScoreboardTeam();
+				teamPacket.setNameTagVisibility("never");
+				teamPacket.setName("NPC-TEAM");
+				teamPacket.setMode(3);
+				teamPacket.setPrefix("§8[NPC] ");
+				teamPacket.getPlayers().add(npcMob.getProfile().getName());
+
+				teamPacket.sendPacket(player);
+
+				if(++tick > 3)
+				{
+					playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
+						PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER,
+						npcMob.getFakeEntityPlayer()));
+
+					this.cancel();
+				}
+			}
+
+		}.runTaskTimerAsynchronously(FakeMobs.getInstance(),  5, 20);
 	}
 
 	public void sendDestroyPacket(Player player, int entityId)

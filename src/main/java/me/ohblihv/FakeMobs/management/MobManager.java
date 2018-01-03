@@ -11,6 +11,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,6 +24,10 @@ public class MobManager
 	private static MobRunnable mobRunnable;
 
 	protected static final ConcurrentHashMap<Integer, BaseMob> mobMap = new ConcurrentHashMap<>();
+	private static final Set<String> usedWorlds = new HashSet<>();
+
+	//Contains players who cannot currently visualise the Mobs
+	private static final Set<String> ignoredPlayers = new HashSet<>();
 
 	public static void init()
 	{
@@ -35,7 +41,7 @@ public class MobManager
 		
 		BUtil.logInfo("Loaded " + mobRunnable.mobIdSet.size() + " fake mobs!");
 		
-		mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 20L, 20L).getTaskId());
+		mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 5L, 5L).getTaskId());
 	}
 
 	public static void destruct()
@@ -101,6 +107,8 @@ public class MobManager
 			return;
 		}
 
+		usedWorlds.add(baseMob.getMobWorld().getName());
+
 		mobMap.put(entityId, baseMob);
 
 		mobRunnable.mobIdSet.add(entityId);
@@ -121,6 +129,26 @@ public class MobManager
 	public static Collection<BaseMob> getAllMobs()
 	{
 		return mobMap.values();
+	}
+
+	public static boolean isUsedWorld(String worldName)
+	{
+		return usedWorlds.contains(worldName);
+	}
+
+	public static void addIgnoredPlayer(String playerName)
+	{
+		ignoredPlayers.add(playerName);
+	}
+
+	public static boolean isIgnoredPlayer(String playerName)
+	{
+		return ignoredPlayers.contains(playerName);
+	}
+
+	public static void removeIgnoredPlayer(String playerName)
+	{
+		ignoredPlayers.remove(playerName);
 	}
 
 }
