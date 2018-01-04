@@ -12,6 +12,7 @@ import me.ohblihv.FakeMobs.util.PacketUtil;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
 import net.minecraft.server.v1_8_R3.*;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.arkhamnetwork.Arkkit.patches.chunkgc.PlayerMoveTask;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -51,14 +52,16 @@ public class NPCMob extends BaseMob
 	{
 		super(entityId, configurationSection);
 
-		if(configurationSection.isString("options.displayname"))
+		/*if(configurationSection.isString("options.displayname"))
 		{
 			displayName = BUtil.translateColours(configurationSection.getString("options.displayname"));
 		}
 		else
 		{
 			displayName = "NPC" + Math.abs(entityId);
-		}
+		}*/
+
+		displayName = RandomStringUtils.randomAlphanumeric(10);
 
 		profile = new NPCProfile(displayName);
 
@@ -104,7 +107,7 @@ public class NPCMob extends BaseMob
 
 		WorldServer worldServer = ((CraftWorld) getMobLocation().getWorld()).getHandle();
 		fakeEntityPlayer = new FakeEntityPlayer(MinecraftServer.getServer(), worldServer,
-				profile, new PlayerInteractManager(worldServer));
+				profile, new PlayerInteractManager(worldServer), profile.getId());
 		fakeEntityPlayer.setLocation(getMobLocation().getX(), getMobLocation().getY(), getMobLocation().getZ(),
 				getMobLocation().getYaw(), getMobLocation().getPitch());
 

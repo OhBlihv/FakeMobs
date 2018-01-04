@@ -55,7 +55,7 @@ public class NPCProfile extends GameProfile
 	{
 		this();
 		this.uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
-		this.name = RandomStringUtils.randomAlphanumeric(10);
+		this.name = name;
 
 		//TODO: Return this to a randomised UUID
 		//this.uuid = UUID.fromString("18c78090-c1bb-4eb6-972a-a52dd1899367");

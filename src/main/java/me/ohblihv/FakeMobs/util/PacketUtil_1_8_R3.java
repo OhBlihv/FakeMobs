@@ -48,51 +48,6 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 		spawnPacket.sendPacket(player);
 	}
 
-	/*@Override
-	public void sendPlayerSpawnPackets(Player player, NPCMob npcMob)
-	{
-		if(!npcMob.isPlayerInitialized(player))
-		{
-			final List<PlayerInfoData> playerInfo = Collections.singletonList(new PlayerInfoData(
-					WrappedGameProfile.fromHandle(npcMob.getProfile()),
-					0,
-					EnumWrappers.NativeGameMode.NOT_SET,
-					WrappedChatComponent.fromText(npcMob.getDisplayName())));
-
-			WrapperPlayServerPlayerInfo wrappedPacket = new WrapperPlayServerPlayerInfo();
-			wrappedPacket.setAction(EnumWrappers.PlayerInfoAction.ADD_PLAYER);
-			wrappedPacket.setData(playerInfo);
-
-			wrappedPacket.sendPacket(player);
-
-			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
-			{
-				WrapperPlayServerPlayerInfo removePacket = new WrapperPlayServerPlayerInfo();
-				removePacket.setAction(EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
-				removePacket.setData(playerInfo);
-			}).runTaskASync(20L);
-
-			npcMob.addInitializedPlayer(player);
-		}
-
-		WrapperPlayServerNamedEntitySpawn18 spawnPacket = new WrapperPlayServerNamedEntitySpawn18();
-
-		*//*spawnPacket.setEntityID(npcMob.getEntityId());
-
-		spawnPacket.setPosition(npcMob.getLocation().toVector());
-		//spawnPacket.setMetadata(new WrappedDataWatcher(player));
-		spawnPacket.setPlayerUUID(npcMob.getProfile().getId());*//*
-
-		spawnPacket.setEntityID(npcMob.getEntityId());
-		spawnPacket.setPlayerUUID(npcMob.getProfile().getId());
-		spawnPacket.setPosition(npcMob.getLocation().toVector());
-		//spawnPacket.setMetadata(WrappedDataWatcher.getEntityWatcher(player));
-
-		spawnPacket.sendPacket(player);
-
-		BUtil.log("Spawning NPC for " + player.getName() + " at " + npcMob.getLocation().toVector());
-	}*/
-
 	@Override
 	public void sendPlayerSpawnPackets(Player player, NPCMob npcMob)
 	{
