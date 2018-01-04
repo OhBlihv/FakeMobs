@@ -19,10 +19,7 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class NPCMob extends BaseMob
 {
@@ -69,7 +66,15 @@ public class NPCMob extends BaseMob
 
 				if(skinUUID == null)
 				{
-					BUtil.log("Skin '" + configurationSection.getString("options.skin", "default") + "' not found.");
+					if(SkinHandler.getSkin(skinName) == null)
+					{
+						BUtil.log("Skin '" + configurationSection.getString("options.skin", "default") + "' not found.");
+					}
+					else
+					{
+						//Skin does not have an associated player/UUID. Generate.
+						skinUUID = UUID.randomUUID().toString();
+					}
 				}
 			}
 
@@ -121,11 +126,11 @@ public class NPCMob extends BaseMob
 		Property cached = SkinHandler.getSkin(skinName);
 		if (cached != null)
 		{
-			BUtil.log("Adding skin properties for " + profile.getId());
+			//BUtil.log("Adding skin properties for " + profile.getId());
 			profile.getProperties().put("textures", cached);
 
-			BUtil.log("Comparing added properties with entity properties => " +
-					(profile.getProperties().get("textures").equals(fakeEntityPlayer.getProfile().getProperties().get("textures"))));
+			/*BUtil.log("Comparing added properties with entity properties => " +
+					(profile.getProperties().get("textures").equals(fakeEntityPlayer.getProfile().getProperties().get("textures"))));*/
 		}
 		else
 		{

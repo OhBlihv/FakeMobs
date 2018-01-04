@@ -9,8 +9,10 @@ import com.mojang.authlib.properties.Property;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.file.FlatFile;
 import me.ohblihv.FakeMobs.FakeMobs;
+import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,19 +37,46 @@ public class SkinHandler
 
 		FlatFile cfg = FlatFile.getInstance();
 
+		Map<String, Property> loadedConfigTextures = new HashMap<>();
 		if(cfg.getSave().contains("skins"))
 		{
-			for(String skinName : cfg.getConfigurationSection("skins").getKeys(false))
+			ConfigurationSection skinSection = cfg.getConfigurationSection("skins");
+			for(String skinName : skinSection.getKeys(false))
 			{
-				String associatedUUID = cfg.getConfigurationSection("skins").getString(skinName);
-				if(associatedUUID == null)
+				if(skinSection.isConfigurationSection(skinName))
 				{
-					BUtil.log("Bad association for Skin Name '" + skinName + "'");
-					continue;
-				}
+					ConfigurationSection innerSkinSection = skinSection.getConfigurationSection(skinName);
+					if(!innerSkinSection.isString("texture") || !innerSkinSection.isString("signature"))
+					{
+						BUtil.log("Missing either 'texture' or 'signature' section inside skin configuration for '" + skinName + "'");
+						continue;
+					}
 
-				BUtil.log("Loaded skin association '" + associatedUUID + "'->'" + skinName + "'");
-				idToNameCache.put(associatedUUID, skinName);
+					Property property = new Property(
+						"textures",
+						innerSkinSection.getString("texture"),
+						innerSkinSection.getString("signature")
+					);
+
+					loadedConfigTextures.put(skinName, property);
+					BUtil.log("Loaded config texture for '" + skinName + "'");
+				}
+				else if(skinSection.isString(skinName))
+				{
+					String associatedUUID = cfg.getConfigurationSection("skins").getString(skinName);
+					if(associatedUUID == null)
+					{
+						BUtil.log("Bad association for Skin Name '" + skinName + "'");
+						continue;
+					}
+
+					BUtil.log("Loaded skin association '" + associatedUUID + "'->'" + skinName + "'");
+					idToNameCache.put(associatedUUID, skinName);
+				}
+				else
+				{
+					BUtil.log("Bad Configuration for Skin '" + skinName + "'. Ignored.");
+				}
 			}
 
 			BUtil.log("Loaded " + idToNameCache.size() + " skin associations.");
@@ -75,6 +104,10 @@ public class SkinHandler
 		{
 			textureCache = new ConcurrentHashMap<>();
 		}
+
+		textureCache.putAll(loadedConfigTextures);
+
+		BUtil.log(textureCache.keySet().toString());
 
 		BUtil.log("Loaded " + textureCache.size() + " textures and " + idToNameCache.size() + " name associations from file");
 	}
