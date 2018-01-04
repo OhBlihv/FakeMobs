@@ -1,8 +1,8 @@
 package me.ohblihv.FakeMobs.mobs;
 
 import com.skytonia.SkyCore.util.BUtil;
+import com.skytonia.SkyCore.util.LocationUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
-import com.skytonia.SkyCore.util.file.FlatFile;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,7 +63,8 @@ public abstract class BaseMob
 
 	public BaseMob(int entityId, ConfigurationSection configurationSection)
 	{
-		this.mobLocation = FlatFile.getInstance().getLocation(configurationSection.getConfigurationSection("location"));
+		this.mobLocation = LocationUtil.getLocation(configurationSection.getConfigurationSection("location"));
+		BUtil.log("Loaded at " + mobLocation);
 		this.mobWorld = mobLocation.getWorld();
 		Chunk chunk = this.mobLocation.getChunk();
 		this.chunkX = chunk.getX();

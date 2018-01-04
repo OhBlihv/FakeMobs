@@ -1,15 +1,15 @@
 package me.ohblihv.FakeMobs.util;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityEquipment;
 import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
 import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
+import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
-import net.minecraft.server.v1_8_R3.PacketPlayOutNamedEntitySpawn;
-import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_8_R3.PlayerConnection;
+import net.minecraft.server.v1_8_R3.*;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -117,6 +117,23 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 				if(tick == 0)
 				{
 					playerConnection.sendPacket(infoPacket);
+
+					final Location location = npcMob.getMobLocation();
+
+					playerConnection.sendPacket(new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(
+						npcMob.getEntityId(),
+						(byte) ((location.getX() - ((int) location.getX())) / 32D),
+						(byte) ((location.getX() - ((int) location.getY())) / 32D),
+						(byte) ((location.getZ() - ((int) location.getZ())) / 32D),
+						(byte) (MathHelper.d(location.getYaw() * 256.0F / 360.0F)),
+						(byte) (MathHelper.d(location.getPitch() * 256.0F / 360.0F)),
+						true
+					));
+
+					playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(
+						npcMob.getFakeEntityPlayer(),
+						(byte) (MathHelper.d(location.getYaw() * 256.0F / 360.0F))
+					));
 				}
 
 				WrapperPlayServerScoreboardTeam teamPacket = new WrapperPlayServerScoreboardTeam();
@@ -127,6 +144,14 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 				teamPacket.getPlayers().add(npcMob.getProfile().getName());
 
 				teamPacket.sendPacket(player);
+
+				WrapperPlayServerEntityEquipment equipmentPacket = new WrapperPlayServerEntityEquipment();
+
+				equipmentPacket.setEntityID(npcMob.getEntityId());
+				equipmentPacket.setItem(npcMob.getHeldItem());
+				equipmentPacket.setSlot(EnumWrappers.ItemSlot.MAINHAND);
+
+				equipmentPacket.sendPacket(player);
 
 				if(++tick > 3)
 				{

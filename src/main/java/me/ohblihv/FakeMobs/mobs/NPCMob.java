@@ -2,6 +2,7 @@ package me.ohblihv.FakeMobs.mobs;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityHeadRotation;
 import com.mojang.authlib.properties.Property;
+import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
 import com.skytonia.SkyCore.util.BUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,11 +14,13 @@ import me.ohblihv.FakeMobs.util.skins.SkinHandler;
 import net.minecraft.server.v1_8_R3.*;
 import org.arkhamnetwork.Arkkit.patches.chunkgc.PlayerMoveTask;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -40,6 +43,9 @@ public class NPCMob extends BaseMob
 
 	@Getter
 	private final FakeEntityPlayer fakeEntityPlayer;
+
+	@Getter
+	private final ItemStack heldItem;
 
 	public NPCMob(int entityId, ConfigurationSection configurationSection)
 	{
@@ -101,6 +107,15 @@ public class NPCMob extends BaseMob
 				profile, new PlayerInteractManager(worldServer));
 		fakeEntityPlayer.setLocation(getMobLocation().getX(), getMobLocation().getY(), getMobLocation().getZ(),
 				getMobLocation().getYaw(), getMobLocation().getPitch());
+
+		if(configurationSection.contains("options.held-item"))
+		{
+			heldItem = ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.held-item")).toItemStack();
+		}
+		else
+		{
+			heldItem = new ItemStack(Material.AIR);
+		}
 
 		this.setEntityId(fakeEntityPlayer.getId());
 	}
