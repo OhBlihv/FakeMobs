@@ -2,24 +2,52 @@
 #--------------------------------
 
 mobs:
-    "example-villager":
+    #"example-villager":
+    #    location:
+    #        world: world
+    #        x: 18.5
+    #        y: 71
+    #        z: 8.5
+    #        yaw: 180
+    #        pitch: 0
+    #    type: SIMPLE_MOB
+    #    options:
+    #        mob-type: VILLAGER
+    #    actions:
+    #        LEFT_CLICK:
+    #            SOUND:
+    #                sound: ENTITY_VILLAGER_HURT
+    #                #Can be lowered to reduce sound spam
+    #                chance: 25
+    #        RIGHT_CLICK:
+    #            COMMAND:
+    #                "say {player} has interacted with me! Thanks!":
+    #                    execute-as: CONSOLE
+    "ExampleNPC":
         location:
             world: world
-            x: 18.5
-            y: 71
-            z: 8.5
-            yaw: 180
-            pitch: 0
-        type: SIMPLE_MOB
+            x: 260.5
+            y: 76
+            z: 271
+            yaw: 154
+        pitch: 0
         options:
-            mob-type: VILLAGER
-        actions:
-            LEFT_CLICK:
-                SOUND:
-                    sound: ENTITY_VILLAGER_HURT
-                    #Can be lowered to reduce sound spam
-                    chance: 25
-            RIGHT_CLICK:
-                COMMAND:
-                    "say {player} has interacted with me! Thanks!":
-                        execute-as: CONSOLE
+            mob-type: PLAYER
+            displayname: "&e "
+            skin: SpookySkin
+            equipment:
+                head:
+                    material: GOLD_HELMET
+                    displayname: "Helmet"
+                body:
+                    material: AIR
+                legs:
+                    material: AIR
+                feet:
+                    material: AIR
+                main-hand:
+                    material: IRON_PICKAXE
+                off-hand:
+                    material: DIAMOND_PICKAXE
+                    damage: 31
+                

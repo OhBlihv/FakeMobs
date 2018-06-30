@@ -22,6 +22,13 @@ import java.util.UUID;
 public class SkinFetcher implements Runnable
 {
 
+	public interface PostLoadRunnable
+	{
+
+		void run(GameProfile gameProfile);
+
+	}
+
 	public static Method MAKE_REQUEST;
 	public static SkinThread SKIN_THREAD;
 	static
@@ -45,14 +52,37 @@ public class SkinFetcher implements Runnable
 
 	@Getter
 	private final NPCMob npc;
-	private final MinecraftSessionService repo;
-	private final String skinUUID;
+	private final String skinKey;
 
-	public SkinFetcher(String skinUUID, MinecraftSessionService repo, NPCMob npc)
+	private final MinecraftSessionService repo;
+	private final String skinId;
+
+	private final PostLoadRunnable postRunnable;
+
+	public SkinFetcher(String skinId, MinecraftSessionService repo, NPCMob npc)
 	{
-		this.skinUUID = skinUUID;
+		//Update Skin
+		this(npc.getSkinName(), skinId, repo, npc, (gameprofile) -> npc.respawnMob());
+	}
+
+	public SkinFetcher(String skinKey, String skinId, MinecraftSessionService repo, PostLoadRunnable runnable)
+	{
+		//Update Skin
+		this(skinKey, skinId, repo, null, runnable);
+	}
+
+	public SkinFetcher(String skinKey, String skinId, MinecraftSessionService repo, NPCMob npc, PostLoadRunnable postRunnable)
+	{
+		this.skinKey = skinKey;
+		this.skinId = skinId;
 		this.repo = repo;
 		this.npc = npc;
+		this.postRunnable = postRunnable;
+	}
+
+	public void start()
+	{
+		SkinFetcher.SKIN_THREAD.addRunnable(this);
 	}
 
 	/*
@@ -60,8 +90,8 @@ public class SkinFetcher implements Runnable
 	 */
 	private GameProfile fillProfileProperties(YggdrasilAuthenticationService auth, GameProfile profile, boolean requireSecure) throws Exception
 	{
-		URL url = HttpAuthenticationService.constantURL(new StringBuilder().append("https://sessionserver.mojang.com/session/minecraft/profile/").append(UUIDTypeAdapter.fromUUID(profile.getId())).toString());
-		url = HttpAuthenticationService.concatenateURL(url, new StringBuilder().append("unsigned=").append(!requireSecure).toString());
+		URL url = HttpAuthenticationService.constantURL("https://sessionserver.mojang.com/session/minecraft/profile/" + UUIDTypeAdapter.fromUUID(profile.getId()));
+		url = HttpAuthenticationService.concatenateURL(url, "unsigned=" + !requireSecure);
 		MinecraftProfilePropertiesResponse response = (MinecraftProfilePropertiesResponse) MAKE_REQUEST.invoke(auth, url, null, MinecraftProfilePropertiesResponse.class);
 		if (response == null)
 		{
@@ -77,21 +107,24 @@ public class SkinFetcher implements Runnable
 	public void run()
 	{
 		GameProfile skinProfile;
-		Property cached = SkinHandler.getSkinByUuid(skinUUID);
+		//Skin UUID or Skin Texture
+		Property cached = SkinHandler.getSkinByUuid(skinKey);
 		if (cached != null)
 		{
-			BUtil.log("Using cached skin texture for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
-			skinProfile = new GameProfile(UUID.fromString(skinUUID), "");
+			BUtil.log("Using cached skin texture for " + skinKey);
+
+			skinProfile = new GameProfile(UUID.fromString(skinId), "");
 			skinProfile.getProperties().put("textures", cached);
 		}
 		else
 		{
 			try
 			{
-				skinProfile = fillProfileProperties(((YggdrasilMinecraftSessionService) repo).getAuthenticationService(), new GameProfile(UUID.fromString(skinUUID), ""), true);
+				skinProfile = fillProfileProperties(((YggdrasilMinecraftSessionService) repo).getAuthenticationService(), new GameProfile(UUID.fromString(skinId), ""), true);
 			}
 			catch (Exception e)
 			{
+				BUtil.log(e.getMessage());
 				if ((e.getMessage() != null && e.getMessage().contains("too many requests")) || (e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().contains("too many requests")))
 				{
 					SKIN_THREAD.delay();
@@ -111,11 +144,18 @@ public class SkinFetcher implements Runnable
 				return;
 			}
 
-			BUtil.log("Fetched skin texture for UUID " + skinUUID + " for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
-			SkinHandler.addSkin(npc.getSkinName(), new Property("textures", textures.getValue(), textures.getSignature()));
+			if(npc != null)
+			{
+				BUtil.log("Fetched skin texture for UUID " + skinId + " for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
+			}
+			else
+			{
+				BUtil.log("Fetched skin texture for Texture " + skinId);
+			}
+
+			SkinHandler.addSkin(skinKey, new Property("textures", textures.getValue(), textures.getSignature()));
 		}
 
-		//Update Skin
-		npc.respawnMob();
+		postRunnable.run(skinProfile);
 	}
 }

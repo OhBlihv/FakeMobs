@@ -34,14 +34,21 @@ public class MobManager
 		mobRunnable = new MobRunnable();
 		
 		ConfigurationSection mobSection = FlatFile.getInstance().getConfigurationSection("mobs");
-		for(String mobName : mobSection.getKeys(false))
+		if(mobSection != null)
 		{
-			loadMob(mobSection.getConfigurationSection(mobName));
+			for(String mobName : mobSection.getKeys(false))
+			{
+				loadMob(mobSection.getConfigurationSection(mobName));
+			}
+
+			BUtil.logInfo("Loaded " + mobRunnable.mobIdSet.size() + " fake mobs!");
+
+			mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 5L, 5L).getTaskId());
 		}
-		
-		BUtil.logInfo("Loaded " + mobRunnable.mobIdSet.size() + " fake mobs!");
-		
-		mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 5L, 5L).getTaskId());
+		else
+		{
+			BUtil.log("No Fake Mobs defined in configuration.");
+		}
 	}
 
 	public static void destruct()

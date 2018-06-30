@@ -119,6 +119,7 @@ public class SkinHandler
 		try(Writer writer = new FileWriter(textureFile))
 		{
 			gson.toJson(textureCache, ConcurrentHashMap.class, writer);
+			BUtil.log("Saved textures.json at '" + textureFile.getAbsolutePath() + "'");
 		}
 		catch(IOException e)
 		{
@@ -144,7 +145,14 @@ public class SkinHandler
 
 	public static Property getSkinByUuid(String uuid)
 	{
-		return textureCache.get(idToNameCache.get(uuid));
+		String name = idToNameCache.get(uuid);
+
+		if(name == null)
+		{
+			return textureCache.get(uuid);
+		}
+
+		return textureCache.get(name);
 	}
 
 	public static String getUUIDForSkin(String skinName)

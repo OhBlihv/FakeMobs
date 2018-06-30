@@ -11,19 +11,26 @@ import me.ohblihv.FakeMobs.npc.NPCProfile;
 import me.ohblihv.FakeMobs.util.PacketUtil;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
-import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_9_R2.MathHelper;
+import net.minecraft.server.v1_9_R2.MinecraftServer;
+import net.minecraft.server.v1_9_R2.PacketPlayOutEntity;
+import net.minecraft.server.v1_9_R2.PlayerInteractManager;
+import net.minecraft.server.v1_9_R2.WorldServer;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.arkhamnetwork.Arkkit.patches.chunkgc.PlayerMoveTask;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class NPCMob extends BaseMob
 {
@@ -46,20 +53,17 @@ public class NPCMob extends BaseMob
 	private final FakeEntityPlayer fakeEntityPlayer;
 
 	@Getter
-	private final ItemStack heldItem;
+	private ItemStack
+		headItem = null,
+		bodyItem = null,
+		legsItem = null,
+		feetItem = null,
+		mainHandItem = null,
+		offHandItem = null;
 
 	public NPCMob(int entityId, ConfigurationSection configurationSection)
 	{
 		super(entityId, configurationSection);
-
-		/*if(configurationSection.isString("options.displayname"))
-		{
-			displayName = BUtil.translateColours(configurationSection.getString("options.displayname"));
-		}
-		else
-		{
-			displayName = "NPC" + Math.abs(entityId);
-		}*/
 
 		displayName = RandomStringUtils.randomAlphanumeric(10);
 
@@ -111,16 +115,61 @@ public class NPCMob extends BaseMob
 		fakeEntityPlayer.setLocation(getMobLocation().getX(), getMobLocation().getY(), getMobLocation().getZ(),
 				getMobLocation().getYaw(), getMobLocation().getPitch());
 
-		if(configurationSection.contains("options.held-item"))
+		if(configurationSection.contains("options.equipment"))
 		{
-			heldItem = ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.held-item")).toItemStack();
-		}
-		else
-		{
-			heldItem = new ItemStack(Material.AIR);
+			if(configurationSection.contains("options.equipment.head"))
+			{
+				headItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.head")).toItemStack());
+			}
+			if(configurationSection.contains("options.equipment.body"))
+			{
+				bodyItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.body")).toItemStack());
+			}
+			if(configurationSection.contains("options.equipment.legs"))
+			{
+				legsItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.legs")).toItemStack());
+			}
+			if(configurationSection.contains("options.equipment.feet"))
+			{
+				feetItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.feet")).toItemStack());
+			}
+			if(configurationSection.contains("options.equipment.main-hand"))
+			{
+				mainHandItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.main-hand")).toItemStack());
+			}
+			if(configurationSection.contains("options.equipment.off-hand"))
+			{
+				offHandItem = setUnbreakable(
+					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.off-hand")).toItemStack());
+			}
 		}
 
 		this.setEntityId(fakeEntityPlayer.getId());
+	}
+
+	private ItemStack setUnbreakable(ItemStack itemStack)
+	{
+		if(itemStack == null)
+		{
+			return itemStack;
+		}
+
+		ItemMeta itemMeta = itemStack.getItemMeta();
+		if(itemMeta == null)
+		{
+			return itemStack;
+		}
+
+		itemMeta.spigot().setUnbreakable(true);
+
+		itemStack.setItemMeta(itemMeta);
+
+		return itemStack;
 	}
 
 	public boolean isPlayerInitialized(Player player)
@@ -141,7 +190,7 @@ public class NPCMob extends BaseMob
 	@Override
 	public void spawnMob(Player player)
 	{
-		Property cached = SkinHandler.getSkin(skinName);
+		Property cached = SkinHandler.getSkinByUuid(skinName);
 		if (cached != null)
 		{
 			//BUtil.log("Adding skin properties for " + profile.getId());
@@ -153,8 +202,8 @@ public class NPCMob extends BaseMob
 		else
 		{
 			BUtil.log("Retrieving skin for " + profile.getId());
-			SkinFetcher.SKIN_THREAD.addRunnable(new SkinFetcher(skinUUID,
-					((CraftWorld) getMobWorld()).getHandle().getMinecraftServer().aD(), this));
+			new SkinFetcher(skinUUID,
+					((CraftWorld) getMobWorld()).getHandle().getMinecraftServer().ay(), this).start();
 		}
 
 		PacketUtil.sendPlayerSpawnPacket(player, this);
@@ -182,7 +231,7 @@ public class NPCMob extends BaseMob
 				continue; //Will be cleaned up later
 			}
 
-			Location playerLocation = PlayerMoveTask.async_player_locations.get(player.getName());
+			Location playerLocation = player.getLocation();
 			if(playerLocation == null)
 			{
 				continue; //Not initialized yet

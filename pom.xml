@@ -31,7 +31,7 @@
 			<artifactId>Spigot</artifactId>
 			<version>1.12-R0.1-SNAPSHOT</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/spigot-1.8.8.jar</systemPath>
+			<systemPath>${project.basedir}/../../lib/spigot-1.9.4.jar</systemPath>
 		</dependency>
 		
 		<dependency>
@@ -43,15 +43,9 @@
 		<!-- Plugin Dependencies -->
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib</artifactId>
+			<artifactId>ProtocolLib-API</artifactId>
 			<version>4.3.0</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.arkhamnetwork</groupId>
-			<artifactId>Arkkit</artifactId>
-			<version>1.0</version>
 		</dependency>
 		
 		<dependency>
