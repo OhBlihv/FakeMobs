@@ -131,7 +131,7 @@ public class PacketUtil_1_9_R2 implements IPacketUtil
 					}
 				}
 
-				if(++tick > 3)
+				if(++tick > 6)
 				{
 					playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
 						PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER,
