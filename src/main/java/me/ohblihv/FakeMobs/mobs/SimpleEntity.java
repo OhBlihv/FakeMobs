@@ -7,10 +7,10 @@ import org.bukkit.entity.EntityType;
 /**
  * Created by Chris Brown (OhBlihv) on 9/09/2016.
  */
-public class SimpleMob extends BaseMob
+public class SimpleEntity extends BaseEntity
 {
 	
-	public SimpleMob(int entityId, ConfigurationSection configurationSection)
+	public SimpleEntity(int entityId, ConfigurationSection configurationSection)
 	{
 		super(entityId, configurationSection);
 		
@@ -20,7 +20,7 @@ public class SimpleMob extends BaseMob
 		}
 		catch(IllegalArgumentException e)
 		{
-			BUtil.logError("Unknown entity type '" + configurationSection.getString("options.mob-type") + "'. Defaulting to VILLAGER.");
+			BUtil.log("Unknown entity type '" + configurationSection.getString("options.mob-type") + "'. Defaulting to VILLAGER.");
 		}
 	}
 	

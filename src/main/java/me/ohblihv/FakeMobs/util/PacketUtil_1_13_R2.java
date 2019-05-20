@@ -11,8 +11,8 @@ import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
 import com.skytonia.SkyCore.util.BUtil;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
-import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.mobs.BaseEntity;
+import me.ohblihv.FakeMobs.mobs.NPCEntity;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer113_2;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
@@ -54,22 +54,22 @@ public class PacketUtil_1_13_R2 implements IPacketUtil
 		);
 	}
 
-	public void sendSpawnPacket(Player player, BaseMob baseMob)
+	public void sendSpawnPacket(Player player, BaseEntity baseEntity)
 	{
 		WrapperPlayServerSpawnEntityLiving_1_13_2 spawnPacket = new WrapperPlayServerSpawnEntityLiving_1_13_2();
 
-		spawnPacket.setEntityID(baseMob.getEntityId());
+		spawnPacket.setEntityID(baseEntity.getEntityId());
 
 		//typeId is unused as of 1.13
-		//spawnPacket.setType(baseMob.getEntityType());
+		//spawnPacket.setType(baseEntity.getEntityType());
 		EntityTypes entityTypes;
 		try
 		{
-			entityTypes = EntityTypes.a(baseMob.getEntityType().getName());
+			entityTypes = EntityTypes.a(baseEntity.getEntityType().getName());
 		}
 		catch(Exception e)
 		{
-			BUtil.log("Unable to find Entity '" + baseMob.getEntityType().name() + "'");
+			BUtil.log("Unable to find Entity '" + baseEntity.getEntityType().name() + "'");
 			e.printStackTrace();
 			return;
 		}
@@ -78,7 +78,7 @@ public class PacketUtil_1_13_R2 implements IPacketUtil
 		spawnPacket.getHandle().getIntegers().write(1, IRegistry.ENTITY_TYPE.a(entityTypes));
 		//BUtil.log("Spawning as ID=" + IRegistry.ENTITY_TYPE.a(entityTypes));
 
-		Location spawnLocation = baseMob.getMobLocation();
+		Location spawnLocation = baseEntity.getMobLocation();
 
 		spawnPacket.setX(spawnLocation.getX());
 		spawnPacket.setY(spawnLocation.getY());
@@ -87,22 +87,22 @@ public class PacketUtil_1_13_R2 implements IPacketUtil
 		spawnPacket.setPitch(spawnLocation.getPitch());
 		spawnPacket.setYaw(spawnLocation.getYaw());
 		//BUtil.log("Spawning at " + spawnLocation.getX() + " " + spawnLocation.getY() + " " + spawnLocation.getZ() + " | " +
-		//		              spawnLocation.getYaw() + " " + spawnLocation.getPitch() + " as id=" + baseMob.getEntityId());
+		//		              spawnLocation.getYaw() + " " + spawnLocation.getPitch() + " as id=" + baseEntity.getEntityId());
 
 		//Reverse these values since yaw == pitch and vice-versa
 		spawnPacket.setYaw(spawnLocation.getPitch());
 		spawnPacket.setHeadPitch(spawnLocation.getYaw());
 
-		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(spawnLocation.getWorld(), baseMob.getEntityType());
+		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(spawnLocation.getWorld(), baseEntity.getEntityType());
 		watcher.setObject(0, (byte) 0);
 		spawnPacket.setMetadata(watcher);
 
-		//BUtil.log("Spawning mob as " + baseMob.getEntityType() + " with id " + baseMob.getEntityId());
+		//BUtil.log("Spawning mob as " + baseEntity.getEntityType() + " with id " + baseEntity.getEntityId());
 		spawnPacket.sendPacket(player);
 	}
 
 	@Override
-	public void sendPlayerSpawnPackets(Player player, NPCMob npcMob)
+	public void sendPlayerSpawnPackets(Player player, NPCEntity npcMob)
 	{
 		PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
 
@@ -229,7 +229,7 @@ public class PacketUtil_1_13_R2 implements IPacketUtil
 	}
 
 	@Override
-	public void initializeSkin(String skinUUID, NPCMob targetNPC, World world)
+	public void initializeSkin(String skinUUID, NPCEntity targetNPC, World world)
 	{
 		new SkinFetcher(skinUUID, getAuthenticationService(), targetNPC).start();
 	}

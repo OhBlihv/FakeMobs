@@ -2,8 +2,8 @@ package me.ohblihv.FakeMobs.management;
 
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
-import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.mobs.BaseEntity;
+import me.ohblihv.FakeMobs.mobs.NPCEntity;
 import me.ohblihv.FakeMobs.util.PacketUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,15 +15,22 @@ import org.bukkit.event.player.PlayerQuitEvent;
 public class PlayerListener implements Listener
 {
 
+	private final EntityHandler entityHandler;
+
+	public PlayerListener(EntityHandler entityHandler)
+	{
+		this.entityHandler = entityHandler;
+	}
+
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent event)
 	{
 		final Player player = event.getPlayer();
-		for(BaseMob mob : MobManager.getAllMobs())
+		for(BaseEntity mob : entityHandler.getMobs())
 		{
-			if(mob instanceof NPCMob/* && ((NPCMob) mob).isPlayerInitialized(player)*/)
+			if(mob instanceof NPCEntity/* && ((NPCEntity) mob).isPlayerInitialized(player)*/)
 			{
-				((NPCMob) mob).removeInitializedPlayer(player);
+				((NPCEntity) mob).removeInitializedPlayer(player);
 			}
 		}
 	}
@@ -40,15 +47,15 @@ public class PlayerListener implements Listener
 		handleIntermediatePlayer(event.getPlayer(), 10);
 	}
 
-	public static void handleIntermediatePlayer(Player player, int delay)
+	public void handleIntermediatePlayer(Player player, int delay)
 	{
-		if(MobManager.isUsedWorld(player.getWorld().getName()))
+		if(entityHandler.isUsedWorld(player.getWorld().getName()))
 		{
-			MobManager.addIgnoredPlayer(player.getName());
+			entityHandler.addIgnoredPlayer(player.getName());
 
 			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
 			{
-				MobManager.removeIgnoredPlayer(player.getName());
+				entityHandler.removeIgnoredPlayer(player.getName());
 			}).runTaskLater(delay);
 
 			//

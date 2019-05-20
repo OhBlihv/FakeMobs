@@ -10,7 +10,7 @@ import com.mojang.util.UUIDTypeAdapter;
 import com.skytonia.SkyCore.util.BUtil;
 import lombok.Getter;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.mobs.NPCEntity;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Method;
@@ -49,7 +49,7 @@ public class SkinFetcher implements Runnable
 	}
 
 	@Getter
-	private final NPCMob npc;
+	private final NPCEntity npc;
 	private final String skinKey;
 
 	private final YggdrasilAuthenticationService repo;
@@ -59,7 +59,7 @@ public class SkinFetcher implements Runnable
 
 	private final PostLoadRunnable postRunnable;
 
-	public SkinFetcher(String skinId, YggdrasilAuthenticationService repo, NPCMob npc)
+	public SkinFetcher(String skinId, YggdrasilAuthenticationService repo, NPCEntity npc)
 	{
 		//Update Skin
 		this(npc.getSkinName(), skinId, repo, npc, (gameprofile) -> npc.respawnMob());
@@ -78,7 +78,7 @@ public class SkinFetcher implements Runnable
 		this.saveSkin = saveSkin;
 	}
 
-	public SkinFetcher(String skinKey, String skinId, YggdrasilAuthenticationService repo, NPCMob npc, PostLoadRunnable postRunnable)
+	public SkinFetcher(String skinKey, String skinId, YggdrasilAuthenticationService repo, NPCEntity npc, PostLoadRunnable postRunnable)
 	{
 		this.skinKey = skinKey;
 		this.skinId = skinId;

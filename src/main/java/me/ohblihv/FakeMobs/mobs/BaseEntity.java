@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.management.MobManager;
+import me.ohblihv.FakeMobs.management.EntityHandler;
 import me.ohblihv.FakeMobs.mobs.actions.ActionFactory;
 import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
 import me.ohblihv.FakeMobs.util.PacketUtil;
@@ -25,7 +25,7 @@ import java.util.Deque;
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
  */
-public abstract class BaseMob
+public abstract class BaseEntity
 {
 
 	@Getter
@@ -58,7 +58,7 @@ public abstract class BaseMob
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
 
-	public BaseMob(int entityId, ConfigurationSection configurationSection)
+	public BaseEntity(int entityId, ConfigurationSection configurationSection)
 	{
 		this.mobLocation = LocationUtil.getLocation(configurationSection.getConfigurationSection("location"));
 		BUtil.log("Loaded at " + mobLocation);
@@ -105,7 +105,7 @@ public abstract class BaseMob
 		Location bukkitLocation = mobLocation;
 		for(Player player : Bukkit.getOnlinePlayers())
 		{
-			if(MobManager.isIgnoredPlayer(player.getName()))
+			if(EntityHandler.isIgnoredPlayer(player.getName()))
 			{
 				continue; //Don't initialize while the player cannot see.
 			}
@@ -201,7 +201,7 @@ public abstract class BaseMob
 		nearbyPlayers.clear();
 		
 		//Let the rest of the plugin know we've died.
-		MobManager.removeMob(entityId);
+		EntityHandler.removeEntity(entityId);
 	}
 	
 	public void onAttack(Player player)

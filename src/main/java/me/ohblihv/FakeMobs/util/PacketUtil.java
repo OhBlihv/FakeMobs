@@ -5,8 +5,8 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.skytonia.SkyCore.util.BUtil;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
-import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.mobs.BaseEntity;
+import me.ohblihv.FakeMobs.mobs.NPCEntity;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -68,17 +68,17 @@ public class PacketUtil
 		return packetUtilImpl.getFakeEntityPlayer(world, gameProfile);
 	}
 
-	public static void sendSpawnPacket(Player player, BaseMob baseMob)
+	public static void sendSpawnPacket(Player player, BaseEntity baseEntity)
 	{
 		if(packetUtilImpl == null)
 		{
 			initImpl();
 		}
 		
-		packetUtilImpl.sendSpawnPacket(player, baseMob);
+		packetUtilImpl.sendSpawnPacket(player, baseEntity);
 	}
 
-	public static void sendPlayerSpawnPacket(Player player, NPCMob npcMob)
+	public static void sendPlayerSpawnPacket(Player player, NPCEntity npcMob)
 	{
 		if(packetUtilImpl == null)
 		{
@@ -108,7 +108,7 @@ public class PacketUtil
 		packetUtilImpl.sendLookPacket(player, yaw, pitch, entityId);
 	}
 
-	public static void initializeSkin(String skinUUID, NPCMob npcMob, World world)
+	public static void initializeSkin(String skinUUID, NPCEntity npcMob, World world)
 	{
 		if(packetUtilImpl == null)
 		{

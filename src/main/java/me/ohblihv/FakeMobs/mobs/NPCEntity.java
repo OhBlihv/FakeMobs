@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class NPCMob extends BaseMob
+public class NPCEntity extends BaseEntity
 {
 
 	private final Set<String> initializedPlayers = new HashSet<>();
@@ -54,7 +54,7 @@ public class NPCMob extends BaseMob
 		mainHandItem = null,
 		offHandItem = null;
 
-	public NPCMob(int entityId, ConfigurationSection configurationSection)
+	public NPCEntity(int entityId, ConfigurationSection configurationSection)
 	{
 		super(entityId, configurationSection);
 

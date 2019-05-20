@@ -11,8 +11,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
-import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.mobs.BaseEntity;
+import me.ohblihv.FakeMobs.mobs.NPCEntity;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer18;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
@@ -52,35 +52,35 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 		);
 	}
 
-	public void sendSpawnPacket(Player player, BaseMob baseMob)
+	public void sendSpawnPacket(Player player, BaseEntity baseEntity)
 	{
 		WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
 
-		spawnPacket.setEntityID(baseMob.getEntityId());
-		spawnPacket.setType(baseMob.getEntityType());
+		spawnPacket.setEntityID(baseEntity.getEntityId());
+		spawnPacket.setType(baseEntity.getEntityType());
 
-		Location spawnLocation = baseMob.getMobLocation();
+		Location spawnLocation = baseEntity.getMobLocation();
 		spawnPacket.setX((int) spawnLocation.getX());
 		spawnPacket.setY((int) spawnLocation.getY());
 		spawnPacket.setZ((int) spawnLocation.getZ());
 		spawnPacket.setYaw(spawnLocation.getYaw());
 		//BUtil.logInfo("Spawning at " + spawnLocation.getX() + " " + spawnLocation.getY() + " " + spawnLocation.getZ() + "| " +
-		//		              spawnLocation.getYaw() + " " + spawnLocation.getPitch() + " as id=" + baseMob.getEntityId());
+		//		              spawnLocation.getYaw() + " " + spawnLocation.getPitch() + " as id=" + baseEntity.getEntityId());
 
 		//Reverse these values since yaw == pitch and vice-versa
 		//spawnPacket.setYaw(spawnLocation.getPitch());
 		spawnPacket.setHeadPitch(spawnLocation.getPitch());
 
-		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(spawnLocation.getWorld(), baseMob.getEntityType());
+		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(spawnLocation.getWorld(), baseEntity.getEntityType());
 		watcher.setObject(0, (byte) 0);
 		spawnPacket.setMetadata(watcher);
 
-		//BUtil.logInfo("Spawning mob as " + baseMob.getEntityType() + " with id " + baseMob.getEntityId());
+		//BUtil.logInfo("Spawning mob as " + baseEntity.getEntityType() + " with id " + baseEntity.getEntityId());
 		spawnPacket.sendPacket(player);
 	}
 
 	@Override
-	public void sendPlayerSpawnPackets(Player player, NPCMob npcMob)
+	public void sendPlayerSpawnPackets(Player player, NPCEntity npcMob)
 	{
 		PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
 
@@ -213,7 +213,7 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 	}
 
 	@Override
-	public void initializeSkin(String skinUUID, NPCMob targetNPC, World world)
+	public void initializeSkin(String skinUUID, NPCEntity targetNPC, World world)
 	{
 		new SkinFetcher(skinUUID, getAuthenticationService(), targetNPC).start();
 	}

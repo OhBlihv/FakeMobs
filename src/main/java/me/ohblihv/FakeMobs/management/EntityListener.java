@@ -11,7 +11,7 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.skytonia.SkyCore.util.BUtil;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
+import me.ohblihv.FakeMobs.mobs.BaseEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -28,15 +28,13 @@ import java.util.List;
  */
 public class EntityListener implements Listener
 {
-
-	//private static AsyncListenerHandler bossListener;
 	
 	private static ProtocolManager protocolManager;
 	
 	//Hey, Welcome to the dodgiest solution ever!
 	private static boolean doublePacketToggle = false;
 
-	public static void init()
+	public EntityListener(EntityHandler entityHandler)
 	{
 		protocolManager = ProtocolLibrary.getProtocolManager();
 
@@ -113,7 +111,7 @@ public class EntityListener implements Listener
 			{
 				try
 				{
-					if(!MobManager.isMobActive())
+					if(!entityHandler.isMobActive())
 					{
 						return;
 					}
@@ -146,9 +144,9 @@ public class EntityListener implements Listener
 					}
 					
 					entityId = packetContainer.getIntegers().read(0);
-					BaseMob baseMob = MobManager.getMob(entityId);
-					//if(!MobManager.isMobId(entityId))
-					if(baseMob == null)
+					BaseEntity baseEntity = entityHandler.getEntity(entityId);
+					//if(!EntityHandler.isMobId(entityId))
+					if(baseEntity == null)
 					{
 						return;
 					}
@@ -167,7 +165,7 @@ public class EntityListener implements Listener
 						int chunkX = playerAt.getX(), chunkZ = playerAt.getZ();
 						
 						//if(!(chunkX == 25 && chunkZ == -2) || !(chunkX == 25 && chunkZ == -1))
-						if(!baseMob.isAtLocation(chunkX, chunkZ))
+						if(!baseEntity.isAtLocation(chunkX, chunkZ))
 						{
 							//BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
 							return;
@@ -220,11 +218,11 @@ public class EntityListener implements Listener
 					{
 						if(isAttack)
 						{
-							baseMob.onAttack(event.getPlayer());
+							baseEntity.onAttack(event.getPlayer());
 						}
 						else
 						{
-							baseMob.onRightClick(event.getPlayer());
+							baseEntity.onRightClick(event.getPlayer());
 						}
 					});
 				}
@@ -284,7 +282,7 @@ public class EntityListener implements Listener
 	/*@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onProjectileLaunch(ProjectileLaunchEvent event)
 	{
-		if(!MobManager.isMobActive() || event.getEntity() == null ||
+		if(!EntityHandler.isMobActive() || event.getEntity() == null ||
 				   !(event.getEntity() instanceof Arrow) || !(event.getEntity().getShooter() instanceof Player))
 		{
 			return;
@@ -294,7 +292,7 @@ public class EntityListener implements Listener
 		Location projectileLocation = projectile.getLocation();
 
 		//Check proximity to boss, see if its possible
-		for(BaseBoss baseBoss : MobManager.mobMap.values())
+		for(BaseBoss baseBoss : EntityHandler.mobMap.values())
 		{
 			Location bossLocation = baseBoss.getLocation();
 
