@@ -56,7 +56,7 @@ public class NPCEntity extends BaseEntity
 
 	public NPCEntity(int entityId, ConfigurationSection configurationSection)
 	{
-		super(entityId, configurationSection);
+		super(entityId, null, null, null);
 
 		displayName = RandomStringUtils.randomAlphanumeric(10);
 

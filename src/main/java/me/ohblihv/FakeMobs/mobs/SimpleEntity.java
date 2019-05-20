@@ -1,27 +1,22 @@
 package me.ohblihv.FakeMobs.mobs;
 
-import com.skytonia.SkyCore.util.BUtil;
-import org.bukkit.configuration.ConfigurationSection;
+import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
+import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
+
+import java.util.Deque;
 
 /**
  * Created by Chris Brown (OhBlihv) on 9/09/2016.
  */
 public class SimpleEntity extends BaseEntity
 {
-	
-	public SimpleEntity(int entityId, ConfigurationSection configurationSection)
+
+	public SimpleEntity(int entityId, Location mobLocation, Deque<BaseAction> leftClickActions, Deque<BaseAction> rightClickActions, EntityType entityType)
 	{
-		super(entityId, configurationSection);
-		
-		try
-		{
-			setEntityType(EntityType.valueOf(configurationSection.getString("options.mob-type")));
-		}
-		catch(IllegalArgumentException e)
-		{
-			BUtil.log("Unknown entity type '" + configurationSection.getString("options.mob-type") + "'. Defaulting to VILLAGER.");
-		}
+		super(entityId, mobLocation, leftClickActions, rightClickActions);
+
+		setEntityType(entityType);
 	}
 	
 }

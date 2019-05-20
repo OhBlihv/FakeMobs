@@ -35,13 +35,12 @@ public class FakeMobs extends JavaPlugin implements Listener
 
 		SkinHandler.load();
 
-		EntityListener.init();
-
 		//Initialize entities when all worlds are initialized
 		RunnableShorthand.forPlugin(this).with(() ->
 		{
 			this.entityHandler = new EntityHandler(FakeMobs.this);
 			getServer().getPluginManager().registerEvents(new PlayerListener(FakeMobs.this.entityHandler), this);
+			new EntityListener(FakeMobs.this.entityHandler);
 		}).runNextTick();
 
 		getServer().getPluginManager().registerEvents(this, this);

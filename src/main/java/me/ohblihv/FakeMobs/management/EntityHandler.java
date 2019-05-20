@@ -4,10 +4,11 @@ import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.file.FlatFile;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseEntity;
-import me.ohblihv.FakeMobs.mobs.NPCEntity;
-import me.ohblihv.FakeMobs.mobs.SimpleEntity;
+import me.ohblihv.FakeMobs.mobs.FakeEntityTypes;
+import me.ohblihv.FakeMobs.mobs.loader.EntityLoader;
+import me.ohblihv.FakeMobs.mobs.loader.exception.EntityLoaderException;
+import me.ohblihv.FakeMobs.mobs.loader.meta.EntityLoaderMeta;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.EntityType;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -112,34 +113,35 @@ public class EntityHandler
 
 	public void loadMob(ConfigurationSection configurationSection)
 	{
-		int entityId = getEntityId();
-		
-		//TODO: Introduce factory for determine mob type
-		BaseEntity baseEntity;
+		FakeEntityTypes fakeType;
 		try
 		{
-			switch(EntityType.valueOf(configurationSection.getString("options.mob-type")))
-			{
-				case PLAYER:
-				{
-					baseEntity = new NPCEntity(entityId, configurationSection);
-					break;
-				}
-				default:
-				{
-					baseEntity = new SimpleEntity(entityId, configurationSection);
-					break;
-				}
-			}
+			fakeType = FakeEntityTypes.valueOf(configurationSection.getString("type"));
 		}
-		catch(Exception e)
+		catch(IllegalArgumentException e)
 		{
-			BUtil.log("Unable to load mob - invalid type");
+			BUtil.log("No fake entity type as '" + configurationSection.getString("type") + "'");
+			return;
+		}
+
+		final EntityLoader entityLoader = fakeType.getEntityLoader();
+		final EntityLoaderMeta loaderMeta;
+		try
+		{
+			loaderMeta = entityLoader.loadConfiguration(configurationSection);
+		}
+		catch (EntityLoaderException e)
+		{
+			//TODO: Neaten
 			e.printStackTrace();
 			return;
 		}
 
-		addEntity(baseEntity);
+		//Don't claim an entity ID until this ID has been loaded.
+		int entityId = getEntityId();
+		loaderMeta.setEntityId(entityId);
+
+		addEntity(entityLoader.createEntityContainer(loaderMeta));
 	}
 
 	public void addEntity(BaseEntity baseEntity)

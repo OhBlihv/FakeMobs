@@ -1,7 +1,6 @@
 package me.ohblihv.FakeMobs.mobs;
 
 import com.skytonia.SkyCore.util.BUtil;
-import com.skytonia.SkyCore.util.LocationUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -55,49 +54,30 @@ public abstract class BaseEntity
 	@Getter private final World     mobWorld;
 	@Getter private final int       chunkX, chunkZ;
 	
-	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
-									interactActions = new ArrayDeque<>();
+	private final Deque<BaseAction> leftClickActions, rightClickActions;
 
-	public BaseEntity(int entityId, ConfigurationSection configurationSection)
+	public BaseEntity(int entityId, Location entityLocation, Deque<BaseAction> leftClickActions, Deque<BaseAction> rightClickActions)
 	{
-		this.mobLocation = LocationUtil.getLocation(configurationSection.getConfigurationSection("location"));
-		BUtil.log("Loaded at " + mobLocation);
-		this.mobWorld = mobLocation.getWorld();
+		this.mobLocation = entityLocation;
+		this.mobWorld = entityLocation.getWorld();
+
 		Chunk chunk = this.mobLocation.getChunk();
 		this.chunkX = chunk.getX();
 		this.chunkZ = chunk.getZ();
 		this.entityId = entityId;
-		
-		//Trigger the DataWatcher cache for this entity type
-		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), entityType);
-		
-		loadActions(configurationSection.getConfigurationSection("actions.LEFT_CLICK"), attackActions);
-		loadActions(configurationSection.getConfigurationSection("actions.RIGHT_CLICK"), interactActions);
-	}
-	
-	private void loadActions(ConfigurationSection configurationSection, Deque<BaseAction> actionDeque)
-	{
-		//This click type is not defined
-		if(configurationSection == null)
+
+		if(leftClickActions == null)
 		{
-			return;
+			leftClickActions = new ArrayDeque<>();
 		}
-		
-		for(String actionName : configurationSection.getKeys(false))
+
+		if(rightClickActions == null)
 		{
-			BaseAction action;
-			try
-			{
-				action = ActionFactory.loadAction(configurationSection.getConfigurationSection(actionName), actionName);
-			}
-			catch(IllegalArgumentException e)
-			{
-				BUtil.logError(e.getMessage());
-				continue;
-			}
-			
-			actionDeque.add(action);
+			rightClickActions = new ArrayDeque<>();
 		}
+
+		this.leftClickActions = leftClickActions;
+		this.rightClickActions = rightClickActions;
 	}
 
 	public void updateNearbyPlayers()
@@ -206,7 +186,7 @@ public abstract class BaseEntity
 	
 	public void onAttack(Player player)
 	{
-		for(BaseAction action : attackActions)
+		for(BaseAction action : leftClickActions)
 		{
 			action.doAction(player);
 		}
@@ -214,7 +194,7 @@ public abstract class BaseEntity
 	
 	public void onRightClick(Player player)
 	{
-		for(BaseAction action : interactActions)
+		for(BaseAction action : rightClickActions)
 		{
 			action.doAction(player);
 		}
@@ -236,7 +216,7 @@ public abstract class BaseEntity
 			throw new IllegalArgumentException("Action cannot be null!");
 		}
 
-		attackActions.add(action);
+		leftClickActions.add(action);
 	}
 
 	public void addInteractHandler(BaseAction action)
@@ -246,7 +226,7 @@ public abstract class BaseEntity
 			throw new IllegalArgumentException("Action cannot be null!");
 		}
 
-		interactActions.add(action);
+		rightClickActions.add(action);
 	}
 
 }
