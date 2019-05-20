@@ -6,21 +6,14 @@ import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
 import com.skytonia.SkyCore.util.BUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.ohblihv.FakeMobs.npc.FakeEntityPlayer;
 import me.ohblihv.FakeMobs.npc.NPCProfile;
+import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
 import me.ohblihv.FakeMobs.util.PacketUtil;
-import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
+import me.ohblihv.FakeMobs.util.lib.MathHelper;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
-import net.minecraft.server.v1_9_R2.MathHelper;
-import net.minecraft.server.v1_9_R2.MinecraftServer;
-import net.minecraft.server.v1_9_R2.PacketPlayOutEntity;
-import net.minecraft.server.v1_9_R2.PlayerInteractManager;
-import net.minecraft.server.v1_9_R2.WorldServer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -109,9 +102,7 @@ public class NPCMob extends BaseMob
 
 		setEntityType(EntityType.PLAYER);
 
-		WorldServer worldServer = ((CraftWorld) getMobLocation().getWorld()).getHandle();
-		fakeEntityPlayer = new FakeEntityPlayer(MinecraftServer.getServer(), worldServer,
-				profile, new PlayerInteractManager(worldServer), profile.getId());
+		fakeEntityPlayer = PacketUtil.getFakeEntityPlayer(getMobLocation().getWorld(), profile);
 		fakeEntityPlayer.setLocation(getMobLocation().getX(), getMobLocation().getY(), getMobLocation().getZ(),
 				getMobLocation().getYaw(), getMobLocation().getPitch());
 
@@ -193,17 +184,13 @@ public class NPCMob extends BaseMob
 		Property cached = SkinHandler.getSkinByUuid(skinName);
 		if (cached != null)
 		{
-			//BUtil.log("Adding skin properties for " + profile.getId());
 			profile.getProperties().put("textures", cached);
-
-			/*BUtil.log("Comparing added properties with entity properties => " +
-					(profile.getProperties().get("textures").equals(fakeEntityPlayer.getProfile().getProperties().get("textures"))));*/
 		}
 		else
 		{
 			BUtil.log("Retrieving skin for " + profile.getId());
-			new SkinFetcher(skinUUID,
-					((CraftWorld) getMobWorld()).getHandle().getMinecraftServer().ay(), this).start();
+
+			PacketUtil.initializeSkin(skinUUID, this, getMobWorld());
 		}
 
 		PacketUtil.sendPlayerSpawnPacket(player, this);
@@ -263,11 +250,7 @@ public class NPCMob extends BaseMob
 					lastLookDirection.yaw = (int) yaw;
 				}
 
-				PacketPlayOutEntity.PacketPlayOutEntityLook lookPacket = new PacketPlayOutEntity.PacketPlayOutEntityLook(
-					getEntityId(), (byte) MathHelper.d(yaw * 256.0F / 360.0F), (byte) MathHelper.d(pitch * 256.0F / 360.0F), false
-				);
-
-				((CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);
+				PacketUtil.sendLookPacket(player, yaw, pitch, getEntityId());
 
 				WrapperPlayServerEntityHeadRotation headRotationPacket = new WrapperPlayServerEntityHeadRotation();
 
@@ -275,21 +258,11 @@ public class NPCMob extends BaseMob
 				headRotationPacket.setHeadYaw((byte) MathHelper.d(yaw * 256.0F / 360.0F));
 
 				headRotationPacket.sendPacket(player);
-
-				//BUtil.log("Looking at player Yaw:" + yaw + " Pitch:" + pitch);
 			}
 			else if(currentlyLookingAt.remove(player.getName()) != null)
 			{
-				//BUtil.log("Not looking at player anymore");
-
 				//Reset location
-				PacketPlayOutEntity.PacketPlayOutEntityLook lookPacket = new PacketPlayOutEntity.PacketPlayOutEntityLook(
-					getEntityId(),
-					(byte) MathHelper.d(currentLocation.getYaw() * 256.0F / 360.0F),
-					(byte) MathHelper.d(currentLocation.getPitch() * 256.0F / 360.0F), false
-				);
-
-				((CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);
+				PacketUtil.sendLookPacket(player, currentLocation.getYaw(), currentLocation.getPitch(), getEntityId());
 
 				WrapperPlayServerEntityHeadRotation headRotationPacket = new WrapperPlayServerEntityHeadRotation();
 

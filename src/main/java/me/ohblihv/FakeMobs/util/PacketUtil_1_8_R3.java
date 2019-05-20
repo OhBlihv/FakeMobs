@@ -14,24 +14,23 @@ import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
-import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer19;
+import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer18;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
-import net.minecraft.server.v1_9_R2.Entity;
-import net.minecraft.server.v1_9_R2.EntityHuman;
-import net.minecraft.server.v1_9_R2.EntityPlayer;
-import net.minecraft.server.v1_9_R2.MathHelper;
-import net.minecraft.server.v1_9_R2.MinecraftServer;
-import net.minecraft.server.v1_9_R2.PacketPlayOutEntity;
-import net.minecraft.server.v1_9_R2.PacketPlayOutEntityHeadRotation;
-import net.minecraft.server.v1_9_R2.PacketPlayOutNamedEntitySpawn;
-import net.minecraft.server.v1_9_R2.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_9_R2.PlayerConnection;
-import net.minecraft.server.v1_9_R2.PlayerInteractManager;
-import net.minecraft.server.v1_9_R2.WorldServer;
+import net.minecraft.server.v1_8_R3.Entity;
+import net.minecraft.server.v1_8_R3.EntityHuman;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.MathHelper;
+import net.minecraft.server.v1_8_R3.MinecraftServer;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntity;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntityHeadRotation;
+import net.minecraft.server.v1_8_R3.PacketPlayOutNamedEntitySpawn;
+import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_8_R3.PlayerConnection;
+import net.minecraft.server.v1_8_R3.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -39,7 +38,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Created by Chris Brown (OhBlihv) on 8/20/2017.
  */
-public class PacketUtil_1_9_R2 implements IPacketUtil
+public class PacketUtil_1_8_R3 implements IPacketUtil
 {
 
 	@Override
@@ -47,19 +46,19 @@ public class PacketUtil_1_9_R2 implements IPacketUtil
 	{
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 
-		return new FakeEntityPlayer19(
+		return new FakeEntityPlayer18(
 			MinecraftServer.getServer(), worldServer,
-			gameProfile, new PlayerInteractManager(worldServer)
+			gameProfile, new net.minecraft.server.v1_8_R3.PlayerInteractManager(worldServer)
 		);
 	}
 
 	public void sendSpawnPacket(Player player, BaseMob baseMob)
 	{
 		WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
-		
+
 		spawnPacket.setEntityID(baseMob.getEntityId());
 		spawnPacket.setType(baseMob.getEntityType());
-		
+
 		Location spawnLocation = baseMob.getMobLocation();
 		spawnPacket.setX((int) spawnLocation.getX());
 		spawnPacket.setY((int) spawnLocation.getY());
@@ -67,15 +66,15 @@ public class PacketUtil_1_9_R2 implements IPacketUtil
 		spawnPacket.setYaw(spawnLocation.getYaw());
 		//BUtil.logInfo("Spawning at " + spawnLocation.getX() + " " + spawnLocation.getY() + " " + spawnLocation.getZ() + "| " +
 		//		              spawnLocation.getYaw() + " " + spawnLocation.getPitch() + " as id=" + baseMob.getEntityId());
-		
+
 		//Reverse these values since yaw == pitch and vice-versa
 		//spawnPacket.setYaw(spawnLocation.getPitch());
 		spawnPacket.setHeadPitch(spawnLocation.getPitch());
-		
+
 		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(spawnLocation.getWorld(), baseMob.getEntityType());
 		watcher.setObject(0, (byte) 0);
 		spawnPacket.setMetadata(watcher);
-		
+
 		//BUtil.logInfo("Spawning mob as " + baseMob.getEntityType() + " with id " + baseMob.getEntityId());
 		spawnPacket.sendPacket(player);
 	}
@@ -171,22 +170,22 @@ public class PacketUtil_1_9_R2 implements IPacketUtil
 	public void sendDestroyPacket(Player player, int entityId)
 	{
 		WrapperPlayServerEntityDestroy destroyPacket = new WrapperPlayServerEntityDestroy();
-		
+
 		destroyPacket.setEntityIds(new int[] {entityId});
-		
+
 		destroyPacket.sendPacket(player);
 	}
 
 	@Override
 	public void sendLookPacket(Player player, float yaw, float pitch, int entityId)
 	{
-		PacketPlayOutEntity.PacketPlayOutEntityLook lookPacket = new PacketPlayOutEntity.PacketPlayOutEntityLook(
+		net.minecraft.server.v1_8_R3.PacketPlayOutEntity.PacketPlayOutEntityLook lookPacket = new net.minecraft.server.v1_8_R3.PacketPlayOutEntity.PacketPlayOutEntityLook(
 			entityId,
 			(byte) MathHelper.d(yaw * 256.0F / 360.0F),
 			(byte) MathHelper.d(pitch * 256.0F / 360.0F), false
 		);
 
-		((CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);
+		((org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);
 	}
 
 	@Override
@@ -222,7 +221,7 @@ public class PacketUtil_1_9_R2 implements IPacketUtil
 	@Override
 	public YggdrasilAuthenticationService getAuthenticationService()
 	{
-		return ((YggdrasilMinecraftSessionService) MinecraftServer.getServer().ay()).getAuthenticationService();
+		return ((YggdrasilMinecraftSessionService) MinecraftServer.getServer().aD()).getAuthenticationService();
 	}
 
 }

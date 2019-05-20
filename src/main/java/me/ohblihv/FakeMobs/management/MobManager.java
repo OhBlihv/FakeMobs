@@ -29,11 +29,20 @@ public class MobManager
 	//Contains players who cannot currently visualise the Mobs
 	private static final Set<String> ignoredPlayers = new HashSet<>();
 
+	public static void reload()
+	{
+		destruct();
+		init();
+	}
+
 	public static void init()
 	{
 		mobRunnable = new MobRunnable();
-		
-		ConfigurationSection mobSection = FlatFile.getInstance().getConfigurationSection("mobs");
+
+		FlatFile flatFile = FlatFile.getInstance();
+		flatFile.reloadFile();
+
+		ConfigurationSection mobSection = flatFile.getConfigurationSection("mobs");
 		if(mobSection != null)
 		{
 			for(String mobName : mobSection.getKeys(false))
@@ -41,14 +50,14 @@ public class MobManager
 				loadMob(mobSection.getConfigurationSection(mobName));
 			}
 
-			BUtil.logInfo("Loaded " + mobRunnable.mobIdSet.size() + " fake mobs!");
-
-			mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 5L, 5L).getTaskId());
+			BUtil.log("Loaded " + mobRunnable.mobIdSet.size() + " fake mobs!");
 		}
 		else
 		{
 			BUtil.log("No Fake Mobs defined in configuration.");
 		}
+
+		mobRunnable.setTaskId(Bukkit.getScheduler().runTaskTimerAsynchronously(FakeMobs.getInstance(), mobRunnable, 5L, 5L).getTaskId());
 	}
 
 	public static void destruct()
@@ -57,6 +66,8 @@ public class MobManager
 		{
 			baseMob.die();
 		}
+
+		mobMap.clear();
 
 		Bukkit.getScheduler().cancelTask(mobRunnable.getTaskId());
 		mobRunnable.setTaskId(-1);
@@ -114,11 +125,16 @@ public class MobManager
 			return;
 		}
 
+		addMob(baseMob);
+	}
+
+	public static void addMob(BaseMob baseMob)
+	{
 		usedWorlds.add(baseMob.getMobWorld().getName());
 
-		mobMap.put(entityId, baseMob);
+		mobMap.put(baseMob.getEntityId(), baseMob);
 
-		mobRunnable.mobIdSet.add(entityId);
+		mobRunnable.mobIdSet.add(baseMob.getEntityId());
 
 		//Spawns itself within 2 seconds
 	}

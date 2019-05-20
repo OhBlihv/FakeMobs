@@ -1,13 +1,27 @@
 package me.ohblihv.FakeMobs.management;
 
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.skytonia.SkyCore.util.BUtil;
+import me.ohblihv.FakeMobs.FakeMobs;
+import me.ohblihv.FakeMobs.mobs.BaseMob;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.List;
 
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
@@ -26,7 +40,71 @@ public class EntityListener implements Listener
 	{
 		protocolManager = ProtocolLibrary.getProtocolManager();
 
-		/*protocolManager.addPacketListener(
+		/*protocolManager.addPacketListener(new PacketAdapter(FakeMobs.getInstance(), ListenerPriority.LOWEST,
+			*//*PacketType.Play.Server.SPAWN_ENTITY,
+			PacketType.Play.Server.SPAWN_ENTITY_LIVING,
+			PacketType.Play.Server.ENTITY_METADATA,
+			PacketType.Play.Server.NAMED_ENTITY_SPAWN*//*
+			PacketType.Play.Server.ENTITY_METADATA
+			)
+		{
+			@Override
+			public void onPacketReceiving(PacketEvent event)
+			{
+				//
+			}
+
+			@Override
+			public void onPacketSending(PacketEvent event)
+			{
+				BUtil.log("Sent " + event.getPacketType().name() + " -> Data ->");
+				for(Field packetField : event.getPacket().getModifier().getFields())
+				{
+					try
+					{
+						packetField.setAccessible(true);
+
+						final Object value = packetField.get(event.getPacket().getHandle());
+
+						String result = "EMPTY";
+						if(value instanceof Collection)
+						{
+							for(Object object : (Collection) value)
+							{
+								if(object instanceof DataWatcher.Item)
+								{
+									DataWatcher.Item item = ((DataWatcher.Item) object);
+
+									result = item.a().a() + "->" + item.b() + (item.b() instanceof Integer ? " -- AS BITS(" + Integer.toBinaryString((Integer) item.b()) + ")" : "") + "\n";
+								}
+								else
+								{
+									result = value + "\n";
+								}
+							}
+
+							if(result.endsWith("\n"))
+							{
+								result = result.substring(0, result.length() - 1);
+							}
+						}
+						else
+						{
+							//Implitic null check
+							result = value + "";
+						}
+
+						BUtil.log(packetField.getName() + "=" + result);
+					}
+					catch (IllegalAccessException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+		});*/
+
+		protocolManager.addPacketListener(
 				new PacketAdapter(FakeMobs.getInstance(), ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY)
 		{
 			
@@ -43,10 +121,28 @@ public class EntityListener implements Listener
 					PacketContainer packetContainer = event.getPacket();
 					
 					//Only handle boss IDs
+					final StructureModifier<Integer> integers = packetContainer.getIntegers();
+
 					int entityId;
-					if(packetContainer.getIntegers().size() == 0)
+					if(integers.size() == 0)
 					{
 						return;
+					}
+
+					try
+					{
+						//Attempt to avoid handling any off-hand interacts
+						List<?> handValues;
+						if(packetContainer.getHands().size() > 0 &&
+							!(handValues = packetContainer.getHands().getValues()).isEmpty() &&
+							handValues.get(0) == EnumWrappers.Hand.OFF_HAND)
+						{
+							return;
+						}
+					}
+					catch(Exception e)
+					{
+						//Ignore.
 					}
 					
 					entityId = packetContainer.getIntegers().read(0);
@@ -59,12 +155,12 @@ public class EntityListener implements Listener
 					
 					//Debug
 					{
-						*//*Entity entity = protocolManager.getEntityFromID(event.getPlayer().getWorld(), entityId);
+						/*Entity entity = protocolManager.getEntityFromID(event.getPlayer().getWorld(), entityId);
 						if(entity != null)
 						{
 							BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
 							return;
-						}*//*
+						}*/
 						
 						//Location entityLocation = event.getPlayer().getLocation();
 						Chunk playerAt = event.getPlayer().getLocation().getChunk();
@@ -81,8 +177,7 @@ public class EntityListener implements Listener
 					//Can't be cancelled/quit from here on in
 					event.setCancelled(true);
 					
-					boolean isAttack = true;
-					
+					boolean isAttack;
 					if(packetContainer.getEntityUseActions().size() > 0)
 					{
 						try
@@ -92,17 +187,21 @@ public class EntityListener implements Listener
 						catch(NullPointerException e)
 						{
 							//Ignore.
-							BUtil.logInfo("Ignored second interact packet.");
+							BUtil.log("Ignored second interact packet.");
 							return;
 						}
 						
 						isAttack = packetContainer.getEntityUseActions().getValues().get(0) == EnumWrappers.EntityUseAction.ATTACK;
 					}
+					else
+					{
+						isAttack = false;
+					}
 				
-				*//*
-				 * Pretty much a flip-flop switch that denies one of the two duplicate
-				 * packets that come with a right-click on an entity.
-				 *//*
+					/*
+					 * Pretty much a flip-flop switch that denies one of the two duplicate
+					 * packets that come with a right-click on an entity.
+					 */
 					if(!isAttack)
 					{
 						if(doublePacketToggle)
@@ -114,12 +213,12 @@ public class EntityListener implements Listener
 						doublePacketToggle = true;
 					}
 					
-					final boolean isAttackFinal = isAttack;
+					//final boolean isAttackFinal = isAttack;
 					//Make sure any sub-action functions on the main thread as to not
 					//cause more issues than it's worth.
 					Bukkit.getScheduler().runTask(FakeMobs.getInstance(), () ->
 					{
-						if(isAttackFinal)
+						if(isAttack)
 						{
 							baseMob.onAttack(event.getPlayer());
 						}
@@ -135,7 +234,7 @@ public class EntityListener implements Listener
 				}
 			}
 			
-		});*/
+		});
 
 		//bossListener.start();
 	}

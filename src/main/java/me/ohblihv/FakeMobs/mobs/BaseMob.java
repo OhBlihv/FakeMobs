@@ -21,15 +21,12 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Random;
 
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
  */
 public abstract class BaseMob
 {
-
-	static final Random rand = new Random();
 
 	@Getter
     private final ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
@@ -190,7 +187,16 @@ public abstract class BaseMob
 	
 	public void die()
 	{
-		despawn();
+		try
+		{
+			despawn();
+		}
+		catch(NoClassDefFoundError e)
+		{
+			//Ignored during despawn.
+			//If the player moves far enough away from this mob, it'll despawn anyway
+			//and not respawn. This is a minor issue.
+		}
 
 		nearbyPlayers.clear();
 		
@@ -217,6 +223,30 @@ public abstract class BaseMob
 	public void onTick(int tick)
 	{
 
+	}
+
+	/*
+	 * API
+	 */
+
+	public void addAttackHandler(BaseAction action)
+	{
+		if(action == null)
+		{
+			throw new IllegalArgumentException("Action cannot be null!");
+		}
+
+		attackActions.add(action);
+	}
+
+	public void addInteractHandler(BaseAction action)
+	{
+		if(action == null)
+		{
+			throw new IllegalArgumentException("Action cannot be null!");
+		}
+
+		interactActions.add(action);
 	}
 
 }

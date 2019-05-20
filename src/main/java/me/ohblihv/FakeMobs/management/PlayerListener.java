@@ -1,10 +1,10 @@
 package me.ohblihv.FakeMobs.management;
 
-import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
+import me.ohblihv.FakeMobs.util.PacketUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -55,13 +55,7 @@ public class PlayerListener implements Listener
 
 			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
 			{
-				WrapperPlayServerScoreboardTeam teamPacket = new WrapperPlayServerScoreboardTeam();
-				teamPacket.setNameTagVisibility("never");
-				teamPacket.setMode(0);
-				teamPacket.setName("NPC-TEAM");
-				teamPacket.setPrefix("§8[NPC] ");
-
-				teamPacket.sendPacket(player);
+				PacketUtil.getInitialNPCTeam().sendPacket(player);
 			}).runTaskASync(delay / 2);
 		}
 	}

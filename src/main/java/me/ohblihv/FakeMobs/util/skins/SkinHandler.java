@@ -38,7 +38,7 @@ public class SkinHandler
 		FlatFile cfg = FlatFile.getInstance();
 
 		Map<String, Property> loadedConfigTextures = new HashMap<>();
-		if(cfg.getSave().contains("skins"))
+		if(cfg.getSave().contains("skins") && cfg.getSave().isConfigurationSection("skins"))
 		{
 			ConfigurationSection skinSection = cfg.getConfigurationSection("skins");
 			for(String skinName : skinSection.getKeys(false))

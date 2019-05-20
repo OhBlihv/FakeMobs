@@ -3,10 +3,8 @@ package me.ohblihv.FakeMobs.util.skins;
 import com.google.common.collect.Iterables;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.HttpAuthenticationService;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
-import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
 import com.mojang.authlib.yggdrasil.response.MinecraftProfilePropertiesResponse;
 import com.mojang.util.UUIDTypeAdapter;
 import com.skytonia.SkyCore.util.BUtil;
@@ -54,24 +52,33 @@ public class SkinFetcher implements Runnable
 	private final NPCMob npc;
 	private final String skinKey;
 
-	private final MinecraftSessionService repo;
+	private final YggdrasilAuthenticationService repo;
 	private final String skinId;
+
+	private boolean saveSkin = true;
 
 	private final PostLoadRunnable postRunnable;
 
-	public SkinFetcher(String skinId, MinecraftSessionService repo, NPCMob npc)
+	public SkinFetcher(String skinId, YggdrasilAuthenticationService repo, NPCMob npc)
 	{
 		//Update Skin
 		this(npc.getSkinName(), skinId, repo, npc, (gameprofile) -> npc.respawnMob());
 	}
 
-	public SkinFetcher(String skinKey, String skinId, MinecraftSessionService repo, PostLoadRunnable runnable)
+	public SkinFetcher(String skinKey, String skinId, YggdrasilAuthenticationService repo, PostLoadRunnable runnable)
 	{
 		//Update Skin
 		this(skinKey, skinId, repo, null, runnable);
 	}
 
-	public SkinFetcher(String skinKey, String skinId, MinecraftSessionService repo, NPCMob npc, PostLoadRunnable postRunnable)
+	public SkinFetcher(String skinUUID, YggdrasilAuthenticationService repo, PostLoadRunnable runnable, boolean saveSkin)
+	{
+		this(skinUUID, skinUUID, repo, null, runnable);
+
+		this.saveSkin = saveSkin;
+	}
+
+	public SkinFetcher(String skinKey, String skinId, YggdrasilAuthenticationService repo, NPCMob npc, PostLoadRunnable postRunnable)
 	{
 		this.skinKey = skinKey;
 		this.skinId = skinId;
@@ -92,14 +99,22 @@ public class SkinFetcher implements Runnable
 	{
 		URL url = HttpAuthenticationService.constantURL("https://sessionserver.mojang.com/session/minecraft/profile/" + UUIDTypeAdapter.fromUUID(profile.getId()));
 		url = HttpAuthenticationService.concatenateURL(url, "unsigned=" + !requireSecure);
+
+		BUtil.log("Querying as '" + url + "'.");
+
 		MinecraftProfilePropertiesResponse response = (MinecraftProfilePropertiesResponse) MAKE_REQUEST.invoke(auth, url, null, MinecraftProfilePropertiesResponse.class);
+
 		if (response == null)
 		{
+			BUtil.log("no response");
 			return profile;
 		}
 		GameProfile result = new GameProfile(response.getId(), response.getName());
 		result.getProperties().putAll(response.getProperties());
 		profile.getProperties().putAll(response.getProperties());
+
+		BUtil.log("Retrieved profile as " + response.getProperties().toString());
+
 		return result;
 	}
 
@@ -120,7 +135,7 @@ public class SkinFetcher implements Runnable
 		{
 			try
 			{
-				skinProfile = fillProfileProperties(((YggdrasilMinecraftSessionService) repo).getAuthenticationService(), new GameProfile(UUID.fromString(skinId), ""), true);
+				skinProfile = fillProfileProperties(repo, new GameProfile(UUID.fromString(skinId), ""), true);
 			}
 			catch (Exception e)
 			{
@@ -153,7 +168,10 @@ public class SkinFetcher implements Runnable
 				BUtil.log("Fetched skin texture for Texture " + skinId);
 			}
 
-			SkinHandler.addSkin(skinKey, new Property("textures", textures.getValue(), textures.getSignature()));
+			if(saveSkin)
+			{
+				SkinHandler.addSkin(skinKey, new Property("textures", textures.getValue(), textures.getSignature()));
+			}
 		}
 
 		postRunnable.run(skinProfile);

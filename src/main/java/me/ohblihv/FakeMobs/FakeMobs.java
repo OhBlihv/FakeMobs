@@ -1,18 +1,20 @@
 package me.ohblihv.FakeMobs;
 
+import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.Getter;
 import me.ohblihv.FakeMobs.management.EntityListener;
 import me.ohblihv.FakeMobs.management.MobManager;
 import me.ohblihv.FakeMobs.management.PlayerListener;
+import me.ohblihv.FakeMobs.util.PacketUtil;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,6 +23,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class FakeMobs extends JavaPlugin implements Listener
 {
+
+	public static final String NPC_TEAM = "NPC_TEAM";
 	
 	@Getter
 	private static FakeMobs instance = null;
@@ -74,15 +78,30 @@ public class FakeMobs extends JavaPlugin implements Listener
 
 	//
 
+	@EventHandler
+	public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent event)
+	{
+		if(event.getPlayer().isOp() && event.getMessage().startsWith("/testcmd"))
+		{
+			ItemContainerConstructor.ItemContainerBuilder builder = new ItemContainerConstructor.ItemContainerBuilder();
+			event.getPlayer().getInventory().addItem(builder.material(Material.valueOf("YELLOW_CONCRETE"))
+					.displayname("Test 1.13 Material")
+				.build().toItemStack());
+
+			event.getPlayer().sendMessage("Given Item");
+		}
+	}
+
 	private String skinName = null,
 			targetSkinId = null;
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onServerCommand(ServerCommandEvent event)
 	{
+		final CommandSender sender = event.getSender();
+
 		if(skinName != null)
 		{
-			final CommandSender sender = event.getSender();
 			if(event.getCommand().equalsIgnoreCase("yes"))
 			{
 				event.setCancelled(true);
@@ -108,18 +127,20 @@ public class FakeMobs extends JavaPlugin implements Listener
 			return;
 		}
 
-		if(event.getCommand().startsWith("skinsave"))
+		if(event.getCommand().equals("fakemobs reload"))
+		{
+			MobManager.reload();
+			sender.sendMessage("§e§l(!) §eReloaded Mobs.");
+		}
+		else if(event.getCommand().startsWith("skinsave"))
 		{
 			event.setCancelled(true);
 
 			SkinHandler.save();
-			event.getSender().sendMessage("§c§l(!) §cSaved Skin Cache in textures.json");
-			return;
+			sender.sendMessage("§c§l(!) §cSaved Skin Cache in textures.json");
 		}
-
-		if(event.getCommand().startsWith("skinload"))
+		else if(event.getCommand().startsWith("skinload"))
 		{
-			final CommandSender sender = event.getSender();
 			event.setCancelled(true);
 
 			String[] args = event.getCommand().replace("skinload ", "").split("[ ]");
@@ -148,7 +169,7 @@ public class FakeMobs extends JavaPlugin implements Listener
 
 	private void handleSkinCommand(CommandSender sender, String skinName, String targetSkinId)
 	{
-		new SkinFetcher(skinName, targetSkinId, ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle().getMinecraftServer().ay(),
+		new SkinFetcher(skinName, targetSkinId, PacketUtil.getAuthenticationService(),
 			(gameProfile) ->
 			{
 				sender.sendMessage("§cUpdated '" + skinName + "' with signed textures in cache.");

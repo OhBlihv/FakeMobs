@@ -28,10 +28,47 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot</artifactId>
-			<version>1.12-R0.1-SNAPSHOT</version>
+			<artifactId>Spigot_1_8</artifactId>
+			<version>1.8-R0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/spigot-1.8.8.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_9</artifactId>
+			<version>1.9-R0.1-SNAPSHOT</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/../../lib/spigot-1.9.4.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_12</artifactId>
+			<version>1.12-R0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/paper-1.12.1.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_13</artifactId>
+			<version>1.13-R0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/spigot-1.13.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_13_R2</artifactId>
+			<version>1.13-R0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/paper-1.13.2.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_14_R1</artifactId>
+			<version>1.14-R0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/spigot-1.14.jar</systemPath>
 		</dependency>
 		
 		<dependency>
@@ -43,8 +80,8 @@
 		<!-- Plugin Dependencies -->
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib-API</artifactId>
-			<version>4.3.0</version>
+			<artifactId>ProtocolLib</artifactId>
+			<version>4.4.0</version>
 			<scope>provided</scope>
 		</dependency>
 		
