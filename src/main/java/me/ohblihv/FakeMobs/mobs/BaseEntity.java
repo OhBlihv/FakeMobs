@@ -1,25 +1,23 @@
 package me.ohblihv.FakeMobs.mobs;
 
-import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.management.EntityHandler;
-import me.ohblihv.FakeMobs.mobs.actions.ActionFactory;
 import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
 import me.ohblihv.FakeMobs.util.PacketUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
@@ -28,7 +26,7 @@ public abstract class BaseEntity
 {
 
 	@Getter
-    private final ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
+    private final Set<Player> nearbyPlayers = new HashSet<>();
 
 	@Getter
 	private int viewDistance = 30;
@@ -50,7 +48,7 @@ public abstract class BaseEntity
 	}
 
 	//Used for judging player proximity
-	@Getter private final Location  mobLocation;
+	@Getter private final Location entityLocation;
 	@Getter private final World     mobWorld;
 	@Getter private final int       chunkX, chunkZ;
 	
@@ -58,10 +56,10 @@ public abstract class BaseEntity
 
 	public BaseEntity(int entityId, Location entityLocation, Deque<BaseAction> leftClickActions, Deque<BaseAction> rightClickActions)
 	{
-		this.mobLocation = entityLocation;
+		this.entityLocation = entityLocation;
 		this.mobWorld = entityLocation.getWorld();
 
-		Chunk chunk = this.mobLocation.getChunk();
+		Chunk chunk = this.entityLocation.getChunk();
 		this.chunkX = chunk.getX();
 		this.chunkZ = chunk.getZ();
 		this.entityId = entityId;
@@ -78,57 +76,6 @@ public abstract class BaseEntity
 
 		this.leftClickActions = leftClickActions;
 		this.rightClickActions = rightClickActions;
-	}
-
-	public void updateNearbyPlayers()
-	{
-		Location bukkitLocation = mobLocation;
-		for(Player player : Bukkit.getOnlinePlayers())
-		{
-			if(EntityHandler.isIgnoredPlayer(player.getName()))
-			{
-				continue; //Don't initialize while the player cannot see.
-			}
-
-			boolean inRange = true;
-
-			Location playerLocation = player.getLocation();
-
-			if( !player.isOnline() ||
-				playerLocation.getWorld() != bukkitLocation.getWorld() ||
-				//If mob is in view distance of the player, make sure to add this player to the nearbyPlayers collection
-				bukkitLocation.distance(playerLocation) > viewDistance)
-			{
-				inRange = false;
-			}
-
-			//Create this for insertion and contains checks
-			if(inRange)
-			{
-				//Mob is already spawned for player
-				if(nearbyPlayers.contains(player))
-				{
-					continue;
-				}
-				
-				nearbyPlayers.add(player);
-
-				//Spawn in the mob
-				spawnMob(player);
-			}
-			else
-			{
-				//Remove the boss if previously in the nearby players collection
-				if(nearbyPlayers.contains(player))
-				{
-					PacketUtil.sendDestroyPacket(player, entityId);
-
-					nearbyPlayers.remove(player);
-				}
-
-				//Otherwise, do nothing
-			}
-		}
 	}
 
 	public void spawnMob(Player player)
@@ -165,7 +112,7 @@ public abstract class BaseEntity
 		}
 	}
 	
-	public void die()
+	public void remove()
 	{
 		try
 		{
@@ -179,9 +126,6 @@ public abstract class BaseEntity
 		}
 
 		nearbyPlayers.clear();
-		
-		//Let the rest of the plugin know we've died.
-		EntityHandler.removeEntity(entityId);
 	}
 	
 	public void onAttack(Player player)
@@ -202,7 +146,7 @@ public abstract class BaseEntity
 
 	public void onTick(int tick)
 	{
-
+		//
 	}
 
 	/*

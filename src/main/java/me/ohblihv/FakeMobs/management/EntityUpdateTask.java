@@ -31,14 +31,14 @@ public class EntityUpdateTask extends BukkitRunnable
 			//Update players every two seconds
 			boolean updateNearby = currentTick % 8 == 0;
 
-			for(BaseEntity baseEntity : entityHandler.getMobs())
+			for(BaseEntity entity : entityHandler.getMobs())
 			{
 				if(updateNearby)
 				{
-					baseEntity.updateNearbyPlayers();
+					entityHandler.updateNearbyPlayers(entity);
 				}
 
-				baseEntity.onTick(currentTick);
+				entity.onTick(currentTick);
 			}
 
 			//Handle overflow. Avoid using long.

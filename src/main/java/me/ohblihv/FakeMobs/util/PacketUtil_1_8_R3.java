@@ -59,7 +59,7 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 		spawnPacket.setEntityID(baseEntity.getEntityId());
 		spawnPacket.setType(baseEntity.getEntityType());
 
-		Location spawnLocation = baseEntity.getMobLocation();
+		Location spawnLocation = baseEntity.getEntityLocation();
 		spawnPacket.setX((int) spawnLocation.getX());
 		spawnPacket.setY((int) spawnLocation.getY());
 		spawnPacket.setZ((int) spawnLocation.getZ());
@@ -103,7 +103,7 @@ public class PacketUtil_1_8_R3 implements IPacketUtil
 
 					playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn((EntityHuman) npcMob.getFakeEntityPlayer()));
 
-					final Location location = npcMob.getMobLocation();
+					final Location location = npcMob.getEntityLocation();
 
 					playerConnection.sendPacket(new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(npcMob.getEntityId(), (byte) ((location.getX() - ((int) location.getX())) / 32D), (byte) ((location.getX() - ((int) location.getY())) / 32D), (byte) ((location.getZ() - ((int) location.getZ())) / 32D), (byte) (MathHelper.d(location.getYaw() * 256.0F / 360.0F)), (byte) (MathHelper.d(location.getPitch() * 256.0F / 360.0F)), true));
 

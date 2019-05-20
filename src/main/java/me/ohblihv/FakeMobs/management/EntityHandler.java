@@ -8,7 +8,11 @@ import me.ohblihv.FakeMobs.mobs.FakeEntityTypes;
 import me.ohblihv.FakeMobs.mobs.loader.EntityLoader;
 import me.ohblihv.FakeMobs.mobs.loader.exception.EntityLoaderException;
 import me.ohblihv.FakeMobs.mobs.loader.meta.EntityLoaderMeta;
+import me.ohblihv.FakeMobs.util.PacketUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -72,7 +76,8 @@ public class EntityHandler
 	{
 		for(BaseEntity baseEntity : mobMap.values())
 		{
-			baseEntity.die();
+			baseEntity.remove();
+			removeEntity(baseEntity.getEntityId());
 		}
 
 		mobMap.clear();
@@ -165,6 +170,45 @@ public class EntityHandler
 		}
 
 		//No handling for 'usedWorlds' removal.
+	}
+
+	public void updateNearbyPlayers(BaseEntity entity)
+	{
+		Location bukkitLocation = entity.getEntityLocation();
+		for(Player player : Bukkit.getOnlinePlayers())
+		{
+			if(isIgnoredPlayer(player.getName()))
+			{
+				continue; //Don't initialize while the player cannot see.
+			}
+
+			Location playerLocation = player.getLocation();
+
+			//Create this for insertion and contains checks
+			if(!player.isOnline() || playerLocation.getWorld() != bukkitLocation.getWorld() ||
+				//If mob is in view distance of the player, make sure to add this player to the nearbyPlayers collection
+				bukkitLocation.distance(playerLocation) > entity.getViewDistance())
+			{
+				//Mob is already spawned for player
+				if(entity.getNearbyPlayers().add(player))
+				{
+					//Spawn in the mob if the player was not added previously
+					entity.spawnMob(player);
+				}
+			}
+			else
+			{
+				//Remove the boss if previously in the nearby players collection
+				if(entity.getNearbyPlayers().contains(player))
+				{
+					PacketUtil.sendDestroyPacket(player, entity.getEntityId());
+
+					entity.getNearbyPlayers().remove(player);
+				}
+
+				//Otherwise, do nothing
+			}
+		}
 	}
 	
 	public BaseEntity getEntity(int entityId)

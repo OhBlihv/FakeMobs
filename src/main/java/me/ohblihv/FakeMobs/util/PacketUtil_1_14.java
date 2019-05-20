@@ -78,7 +78,7 @@ public class PacketUtil_1_14 implements IPacketUtil
 		spawnPacket.getHandle().getIntegers().write(1, IRegistry.ENTITY_TYPE.a(entityTypes));
 		//BUtil.log("Spawning as ID=" + IRegistry.ENTITY_TYPE.a(entityTypes));
 
-		Location spawnLocation = baseEntity.getMobLocation();
+		Location spawnLocation = baseEntity.getEntityLocation();
 
 		spawnPacket.setX(spawnLocation.getX());
 		spawnPacket.setY(spawnLocation.getY());
@@ -125,7 +125,7 @@ public class PacketUtil_1_14 implements IPacketUtil
 				{
 					playerConnection.sendPacket(infoPacket);
 
-					final Location location = npcMob.getMobLocation();
+					final Location location = npcMob.getEntityLocation();
 
 					playerConnection.sendPacket(new PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook(npcMob.getEntityId(), (byte) ((location.getX() - ((int) location.getX())) / 32D), (byte) ((location.getX() - ((int) location.getY())) / 32D), (byte) ((location.getZ() - ((int) location.getZ())) / 32D), (byte) (MathHelper.d(location.getYaw() * 256.0F / 360.0F)), (byte) (MathHelper.d(location.getPitch() * 256.0F / 360.0F)), true));
 

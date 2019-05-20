@@ -102,9 +102,9 @@ public class NPCEntity extends BaseEntity
 
 		setEntityType(EntityType.PLAYER);
 
-		fakeEntityPlayer = PacketUtil.getFakeEntityPlayer(getMobLocation().getWorld(), profile);
-		fakeEntityPlayer.setLocation(getMobLocation().getX(), getMobLocation().getY(), getMobLocation().getZ(),
-				getMobLocation().getYaw(), getMobLocation().getPitch());
+		fakeEntityPlayer = PacketUtil.getFakeEntityPlayer(getEntityLocation().getWorld(), profile);
+		fakeEntityPlayer.setLocation(getEntityLocation().getX(), getEntityLocation().getY(), getEntityLocation().getZ(),
+				getEntityLocation().getYaw(), getEntityLocation().getPitch());
 
 		if(configurationSection.contains("options.equipment"))
 		{
@@ -209,7 +209,7 @@ public class NPCEntity extends BaseEntity
 	@Override
 	public void onTick(int tick)
 	{
-		Location currentLocation = getMobLocation();
+		Location currentLocation = getEntityLocation();
 
 		for(Player player : getNearbyPlayers())
 		{
