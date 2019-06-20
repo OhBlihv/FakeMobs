@@ -2,28 +2,25 @@ package me.ohblihv.FakeMobs.mobs;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityHeadRotation;
 import com.mojang.authlib.properties.Property;
-import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
 import com.skytonia.SkyCore.util.BUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
 import me.ohblihv.FakeMobs.npc.NPCProfile;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
 import me.ohblihv.FakeMobs.util.PacketUtil;
 import me.ohblihv.FakeMobs.util.lib.MathHelper;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class NPCEntity extends BaseEntity
 {
@@ -31,13 +28,7 @@ public class NPCEntity extends BaseEntity
 	private final Set<String> initializedPlayers = new HashSet<>();
 
 	@Getter
-	private final String displayName;
-
-	@Getter
-	private final String skinUUID;
-
-	@Getter
-	private final String skinName;
+	private final String skinUUID, skinName;
 
 	@Getter
 	private final NPCProfile profile;
@@ -46,121 +37,33 @@ public class NPCEntity extends BaseEntity
 	private final FakeEntityPlayer fakeEntityPlayer;
 
 	@Getter
-	private ItemStack
-		headItem = null,
-		bodyItem = null,
-		legsItem = null,
-		feetItem = null,
-		mainHandItem = null,
-		offHandItem = null;
+	private ItemStack headItem, bodyItem, legsItem, feetItem,
+						mainHandItem, offHandItem;
 
-	public NPCEntity(int entityId, ConfigurationSection configurationSection)
+	public NPCEntity(int entityId, Location entityLocation, Deque<BaseAction> leftClickActions, Deque<BaseAction> rightClickActions,
+	                 NPCProfile npcProfile, String skinUUID, String skinName,
+	                 ItemStack headItem, ItemStack bodyItem, ItemStack legsItem, ItemStack feetItem,
+	                 ItemStack mainHandItem, ItemStack offHandItem)
 	{
-		super(entityId, null, null, null);
+		super(entityId, entityLocation, null, null);
 
-		displayName = RandomStringUtils.randomAlphanumeric(10);
+		this.skinUUID = skinUUID;
+		this.skinName = skinName;
+		this.profile = npcProfile;
 
-		profile = new NPCProfile(displayName);
+		fakeEntityPlayer = PacketUtil.getFakeEntityPlayer(getEntityLocation().getWorld(), npcProfile);
+		fakeEntityPlayer.setLocation(getEntityLocation().getX(), getEntityLocation().getY(), getEntityLocation().getZ(),
+			getEntityLocation().getYaw(), getEntityLocation().getPitch());
 
-		{
-			String skinUUID = null;
-			String skinName = null;
-			if(configurationSection.isString("options.skin"))
-			{
-				skinName = configurationSection.getString("options.skin");
-				skinUUID = SkinHandler.getUUIDForSkin(skinName);
-
-				if(skinUUID == null)
-				{
-					if(SkinHandler.getSkin(skinName) == null)
-					{
-						BUtil.log("Skin '" + configurationSection.getString("options.skin", "default") + "' not found.");
-					}
-					else
-					{
-						//Skin does not have an associated player/UUID. Generate.
-						skinUUID = UUID.randomUUID().toString();
-					}
-				}
-			}
-
-			if(skinUUID == null)
-			{
-				BUtil.log("No Skin defined for " + displayName);
-
-				skinName = getProfile().getId().toString();
-			}
-
-			if(skinName == null)
-			{
-				skinName = displayName;
-			}
-
-			this.skinName = skinName;
-			this.skinUUID = skinUUID;
-		}
+		this.headItem = headItem;
+		this.bodyItem = bodyItem;
+		this.legsItem = legsItem;
+		this.feetItem = feetItem;
+		this.mainHandItem = mainHandItem;
+		this.offHandItem = offHandItem;
 
 		setEntityType(EntityType.PLAYER);
-
-		fakeEntityPlayer = PacketUtil.getFakeEntityPlayer(getEntityLocation().getWorld(), profile);
-		fakeEntityPlayer.setLocation(getEntityLocation().getX(), getEntityLocation().getY(), getEntityLocation().getZ(),
-				getEntityLocation().getYaw(), getEntityLocation().getPitch());
-
-		if(configurationSection.contains("options.equipment"))
-		{
-			if(configurationSection.contains("options.equipment.head"))
-			{
-				headItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.head")).toItemStack());
-			}
-			if(configurationSection.contains("options.equipment.body"))
-			{
-				bodyItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.body")).toItemStack());
-			}
-			if(configurationSection.contains("options.equipment.legs"))
-			{
-				legsItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.legs")).toItemStack());
-			}
-			if(configurationSection.contains("options.equipment.feet"))
-			{
-				feetItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.feet")).toItemStack());
-			}
-			if(configurationSection.contains("options.equipment.main-hand"))
-			{
-				mainHandItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.main-hand")).toItemStack());
-			}
-			if(configurationSection.contains("options.equipment.off-hand"))
-			{
-				offHandItem = setUnbreakable(
-					ItemContainerConstructor.buildItemContainer(configurationSection.getConfigurationSection("options.equipment.off-hand")).toItemStack());
-			}
-		}
-
-		this.setEntityId(fakeEntityPlayer.getId());
-	}
-
-	private ItemStack setUnbreakable(ItemStack itemStack)
-	{
-		if(itemStack == null)
-		{
-			return itemStack;
-		}
-
-		ItemMeta itemMeta = itemStack.getItemMeta();
-		if(itemMeta == null)
-		{
-			return itemStack;
-		}
-
-		itemMeta.spigot().setUnbreakable(true);
-
-		itemStack.setItemMeta(itemMeta);
-
-		return itemStack;
+		setEntityId(fakeEntityPlayer.getId());
 	}
 
 	public boolean isPlayerInitialized(Player player)

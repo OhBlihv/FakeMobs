@@ -16,11 +16,11 @@ import java.util.Deque;
 import java.util.EnumMap;
 import java.util.Map;
 
-public abstract class BaseEntityLoader implements EntityLoader<BaseEntityLoaderMeta>
+public abstract class BaseEntityLoader<T extends BaseEntityLoaderMeta> implements EntityLoader<T>
 {
 
 	@Override
-	public BaseEntityLoaderMeta loadConfiguration(ConfigurationSection configurationSection) throws EntityLoaderException
+	public T loadConfiguration(ConfigurationSection configurationSection) throws EntityLoaderException
 	{
 		final Location mobLocation = LocationUtil.getLocation(configurationSection.getConfigurationSection("location"));
 		final EntityType entityType;
@@ -45,7 +45,7 @@ public abstract class BaseEntityLoader implements EntityLoader<BaseEntityLoaderM
 			}
 		}
 
-		return new BaseEntityLoaderMeta(entityType, mobLocation, interactActions);
+		return (T) new BaseEntityLoaderMeta(entityType, mobLocation, interactActions);
 	}
 
 	@Override
