@@ -13,6 +13,7 @@ public class SkinThread implements Runnable
 	public void addRunnable(SkinFetcher r)
 	{
 		Iterator<SkinFetcher> itr = tasks.iterator();
+		//Clear any old duplicate skin fetchers before starting this new task
 		while (itr.hasNext())
 		{
 			if (itr.next().getNpc().getProfile().getId().equals(r.getNpc().getProfile().getId()))
@@ -25,8 +26,7 @@ public class SkinThread implements Runnable
 
 	public void delay()
 	{
-		delay = 120; // need to wait a minute before Mojang accepts API
-		// calls again
+		delay = 120; // need to wait a minute before Mojang accepts API calls again
 	}
 
 	@Override
@@ -38,11 +38,10 @@ public class SkinThread implements Runnable
 			return;
 		}
 		Runnable r = tasks.pollFirst();
-		if (r == null)
+		if (r != null)
 		{
-			return;
+			r.run();
 		}
-		r.run();
 	}
 
 }

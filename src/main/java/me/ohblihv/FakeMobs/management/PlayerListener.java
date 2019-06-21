@@ -28,7 +28,7 @@ public class PlayerListener implements Listener
 		final Player player = event.getPlayer();
 		for(BaseEntity mob : entityHandler.getMobs())
 		{
-			if(mob instanceof NPCEntity/* && ((NPCEntity) mob).isPlayerInitialized(player)*/)
+			if(mob instanceof NPCEntity)
 			{
 				((NPCEntity) mob).removeInitializedPlayer(player);
 			}

@@ -36,6 +36,29 @@ public class EntityHandler
 	//Contains players who cannot currently visualise the Mobs
 	private final Set<String> ignoredPlayers = new HashSet<>();
 
+	public EntityHandler(FakeMobs plugin)
+	{
+		this.plugin = plugin;
+
+		reload();
+	}
+
+	public void destruct()
+	{
+		for(BaseEntity baseEntity : mobMap.values())
+		{
+			baseEntity.remove();
+			removeEntity(baseEntity.getEntityId());
+		}
+
+		mobMap.clear();
+
+		if(entityUpdateTask != null)
+		{
+			entityUpdateTask.cancel();
+		}
+	}
+
 	public void reload()
 	{
 		destruct();
@@ -63,29 +86,6 @@ public class EntityHandler
 		}
 
 		entityUpdateTask.runTaskTimerAsynchronously(plugin, 5L, 5L);
-	}
-
-	public EntityHandler(FakeMobs plugin)
-	{
-		this.plugin = plugin;
-
-		reload();
-	}
-
-	public void destruct()
-	{
-		for(BaseEntity baseEntity : mobMap.values())
-		{
-			baseEntity.remove();
-			removeEntity(baseEntity.getEntityId());
-		}
-
-		mobMap.clear();
-
-		if(entityUpdateTask != null)
-		{
-			entityUpdateTask.cancel();
-		}
 	}
 
 	public boolean isMobId(int entityId)
