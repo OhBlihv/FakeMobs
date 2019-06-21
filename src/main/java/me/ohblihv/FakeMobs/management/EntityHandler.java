@@ -129,7 +129,7 @@ public class EntityHandler
 			return;
 		}
 
-		final EntityLoader entityLoader = fakeType.getEntityLoader();
+		final EntityLoader<EntityLoaderMeta> entityLoader = fakeType.getEntityLoader();
 		final EntityLoaderMeta loaderMeta;
 		try
 		{

@@ -161,7 +161,7 @@ public class SkinFetcher implements Runnable
 
 			if(npc != null)
 			{
-				BUtil.log("Fetched skin texture for UUID " + skinId + " for NPC " + npc.getDisplayName() + " UUID " + npc.getProfile().getId());
+				BUtil.log("Fetched skin texture for UUID " + skinId + " for NPC " + npc.getPlayerListName() + " UUID " + npc.getProfile().getId());
 			}
 			else
 			{

@@ -99,6 +99,11 @@ public class NPCEntity extends BaseEntity
 		PacketUtil.sendPlayerSpawnPacket(player, this);
 	}
 
+	public String getPlayerListName()
+	{
+		return profile.getName();
+	}
+
 	private final Map<String, LastLookDirection> currentlyLookingAt = new HashMap<>();
 	@AllArgsConstructor
 	private class LastLookDirection
