@@ -38,70 +38,6 @@ public class EntityListener implements Listener
 	{
 		protocolManager = ProtocolLibrary.getProtocolManager();
 
-		/*protocolManager.addPacketListener(new PacketAdapter(FakeMobs.getInstance(), ListenerPriority.LOWEST,
-			*//*PacketType.Play.Server.SPAWN_ENTITY,
-			PacketType.Play.Server.SPAWN_ENTITY_LIVING,
-			PacketType.Play.Server.ENTITY_METADATA,
-			PacketType.Play.Server.NAMED_ENTITY_SPAWN*//*
-			PacketType.Play.Server.ENTITY_METADATA
-			)
-		{
-			@Override
-			public void onPacketReceiving(PacketEvent event)
-			{
-				//
-			}
-
-			@Override
-			public void onPacketSending(PacketEvent event)
-			{
-				BUtil.log("Sent " + event.getPacketType().name() + " -> Data ->");
-				for(Field packetField : event.getPacket().getModifier().getFields())
-				{
-					try
-					{
-						packetField.setAccessible(true);
-
-						final Object value = packetField.get(event.getPacket().getHandle());
-
-						String result = "EMPTY";
-						if(value instanceof Collection)
-						{
-							for(Object object : (Collection) value)
-							{
-								if(object instanceof DataWatcher.Item)
-								{
-									DataWatcher.Item item = ((DataWatcher.Item) object);
-
-									result = item.a().a() + "->" + item.b() + (item.b() instanceof Integer ? " -- AS BITS(" + Integer.toBinaryString((Integer) item.b()) + ")" : "") + "\n";
-								}
-								else
-								{
-									result = value + "\n";
-								}
-							}
-
-							if(result.endsWith("\n"))
-							{
-								result = result.substring(0, result.length() - 1);
-							}
-						}
-						else
-						{
-							//Implitic null check
-							result = value + "";
-						}
-
-						BUtil.log(packetField.getName() + "=" + result);
-					}
-					catch (IllegalAccessException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			}
-		});*/
-
 		protocolManager.addPacketListener(
 				new PacketAdapter(FakeMobs.getInstance(), ListenerPriority.LOWEST, PacketType.Play.Client.USE_ENTITY)
 		{
@@ -153,21 +89,11 @@ public class EntityListener implements Listener
 					
 					//Debug
 					{
-						/*Entity entity = protocolManager.getEntityFromID(event.getPlayer().getWorld(), entityId);
-						if(entity != null)
-						{
-							BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
-							return;
-						}*/
-						
-						//Location entityLocation = event.getPlayer().getLocation();
 						Chunk playerAt = event.getPlayer().getLocation().getChunk();
 						int chunkX = playerAt.getX(), chunkZ = playerAt.getZ();
 						
-						//if(!(chunkX == 25 && chunkZ == -2) || !(chunkX == 25 && chunkZ == -1))
 						if(!baseEntity.isAtLocation(chunkX, chunkZ))
 						{
-							//BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
 							return;
 						}
 					}
@@ -210,8 +136,7 @@ public class EntityListener implements Listener
 						
 						doublePacketToggle = true;
 					}
-					
-					//final boolean isAttackFinal = isAttack;
+
 					//Make sure any sub-action functions on the main thread as to not
 					//cause more issues than it's worth.
 					Bukkit.getScheduler().runTask(FakeMobs.getInstance(), () ->
@@ -233,13 +158,11 @@ public class EntityListener implements Listener
 			}
 			
 		});
-
-		//bossListener.start();
 	}
 
 	public static void destruct()
 	{
-		//bossListener.cancel();
+		//
 	}
 
 	public static int getDamage(Player player)
@@ -274,38 +197,5 @@ public class EntityListener implements Listener
 
 		return damage;
 	}
-
-	/*
-	 * Bukkit Listeners
-	 */
-
-	/*@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onProjectileLaunch(ProjectileLaunchEvent event)
-	{
-		if(!EntityHandler.isMobActive() || event.getEntity() == null ||
-				   !(event.getEntity() instanceof Arrow) || !(event.getEntity().getShooter() instanceof Player))
-		{
-			return;
-		}
-
-		Projectile projectile = event.getEntity();
-		Location projectileLocation = projectile.getLocation();
-
-		//Check proximity to boss, see if its possible
-		for(BaseBoss baseBoss : EntityHandler.mobMap.values())
-		{
-			Location bossLocation = baseBoss.getLocation();
-
-			if(bossLocation.getWorld().getEnvironment() != projectileLocation.getWorld().getEnvironment() ||
-					   bossLocation.distance(projectileLocation) > baseBoss.getViewDistance())
-			{
-				continue;
-			}
-
-			BUtil.logInfo("Adding Projectile");
-			baseBoss.addNearbyProjectile(projectile);
-		}
-	}*/
-
 
 }
