@@ -7,6 +7,7 @@ import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.DelegateMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import me.ohblihv.FakeMobs.mobs.SimpleMob;
+import me.ohblihv.FakeMobs.mobs.VillagerMob;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -113,11 +114,11 @@ public class MobManager
 					baseMob = new NPCMob(entityId, configurationSection);
 					break;
 				}
-				/*case VILLAGER:
+				case VILLAGER:
 				{
 					baseMob = new VillagerMob(entityId, configurationSection);
 					break;
-				}*/
+				}
 				default:
 				{
 					baseMob = new SimpleMob(entityId, configurationSection);

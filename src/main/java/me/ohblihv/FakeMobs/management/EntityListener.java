@@ -262,8 +262,8 @@ public class EntityListener implements Listener
 
 		switch(itemStack.getType())
 		{
-			case WOOD_SWORD:
-			case GOLD_SWORD:
+			case WOODEN_SWORD:
+			case GOLDEN_SWORD:
 				damage = 4; break;
 			case STONE_SWORD: damage = 5; break;
 			case IRON_SWORD: damage = 6; break;

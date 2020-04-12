@@ -1,6 +1,7 @@
 package me.ohblihv.FakeMobs;
 
-import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.Getter;
 import me.ohblihv.FakeMobs.management.EntityListener;
@@ -11,11 +12,14 @@ import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
 import me.ohblihv.FakeMobs.util.skins.SkinHandler;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -81,14 +85,39 @@ public class FakeMobs extends JavaPlugin implements Listener
 	@EventHandler
 	public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent event)
 	{
-		if(event.getPlayer().isOp() && event.getMessage().startsWith("/testcmd"))
+		final Player player = event.getPlayer();
+		if(!player.isOp())
 		{
-			ItemContainerConstructor.ItemContainerBuilder builder = new ItemContainerConstructor.ItemContainerBuilder();
-			event.getPlayer().getInventory().addItem(builder.material(Material.valueOf("YELLOW_CONCRETE"))
-					.displayname("Test 1.13 Material")
-				.build().toItemStack());
+			return;
+		}
 
-			event.getPlayer().sendMessage("Given Item");
+		if (event.getMessage().startsWith("/gettexture"))
+		{
+			event.setCancelled(true);
+
+			ItemStack itemInHand = player.getItemInHand();
+			if (itemInHand == null || itemInHand.getType() == Material.AIR)
+			{
+				player.sendMessage("§c§l(!) §cYou're not holding anything!");
+				return;
+			}
+
+			if (itemInHand.getType() != Material.PLAYER_HEAD)
+			{
+				player.sendMessage("§c§l(!) §cYou must be holding a player head.");
+				return;
+			}
+
+			SkullMeta skullMeta = (SkullMeta) itemInHand.getItemMeta();
+			for(ProfileProperty property : skullMeta.getPlayerProfile().getProperties())
+			{
+				if(property.getName().equals("textures"))
+				{
+					BUtil.log(property.getValue());
+					player.sendMessage("§e§l(!) §eThe base64 of this skin has been printed to console.");
+					break;
+				}
+			}
 		}
 	}
 
