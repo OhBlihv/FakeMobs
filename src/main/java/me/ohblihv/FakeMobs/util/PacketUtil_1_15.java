@@ -14,33 +14,33 @@ import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
-import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer114;
+import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer115;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_13_2;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
-import net.minecraft.server.v1_14_R1.Entity;
-import net.minecraft.server.v1_14_R1.EntityHuman;
-import net.minecraft.server.v1_14_R1.EntityPlayer;
-import net.minecraft.server.v1_14_R1.EntityTypes;
-import net.minecraft.server.v1_14_R1.IRegistry;
-import net.minecraft.server.v1_14_R1.MathHelper;
-import net.minecraft.server.v1_14_R1.MinecraftServer;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntity;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityHeadRotation;
-import net.minecraft.server.v1_14_R1.PacketPlayOutNamedEntitySpawn;
-import net.minecraft.server.v1_14_R1.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_14_R1.PlayerConnection;
-import net.minecraft.server.v1_14_R1.PlayerInteractManager;
-import net.minecraft.server.v1_14_R1.WorldServer;
+import net.minecraft.server.v1_15_R1.Entity;
+import net.minecraft.server.v1_15_R1.EntityHuman;
+import net.minecraft.server.v1_15_R1.EntityPlayer;
+import net.minecraft.server.v1_15_R1.EntityTypes;
+import net.minecraft.server.v1_15_R1.IRegistry;
+import net.minecraft.server.v1_15_R1.MathHelper;
+import net.minecraft.server.v1_15_R1.MinecraftServer;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntity;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityHeadRotation;
+import net.minecraft.server.v1_15_R1.PacketPlayOutNamedEntitySpawn;
+import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_15_R1.PlayerConnection;
+import net.minecraft.server.v1_15_R1.PlayerInteractManager;
+import net.minecraft.server.v1_15_R1.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_15_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class PacketUtil_1_14 implements IPacketUtil
+public class PacketUtil_1_15 implements IPacketUtil
 {
 
 	@Override
@@ -48,7 +48,7 @@ public class PacketUtil_1_14 implements IPacketUtil
 	{
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 
-		return new FakeEntityPlayer114(
+		return new FakeEntityPlayer115(
 			MinecraftServer.getServer(), worldServer,
 			gameProfile, new PlayerInteractManager(worldServer)
 		);

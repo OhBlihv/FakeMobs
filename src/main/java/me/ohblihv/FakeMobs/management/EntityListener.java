@@ -11,7 +11,7 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.skytonia.SkyCore.util.BUtil;
 import me.ohblihv.FakeMobs.FakeMobs;
-import me.ohblihv.FakeMobs.mobs.BaseMob;
+import me.ohblihv.FakeMobs.mobs.IFakeMob;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -146,11 +146,16 @@ public class EntityListener implements Listener
 					}
 					
 					entityId = packetContainer.getIntegers().read(0);
-					BaseMob baseMob = MobManager.getMob(entityId);
+					IFakeMob baseMob = MobManager.getMob(entityId);
 					//if(!MobManager.isMobId(entityId))
 					if(baseMob == null)
 					{
-						return;
+						// Attempt to retrieve a delegate mob for this mob
+						baseMob = MobManager.getDelegateMob(entityId);
+						if(baseMob == null)
+						{
+							return;
+						}
 					}
 					
 					//Debug
@@ -212,19 +217,19 @@ public class EntityListener implements Listener
 						
 						doublePacketToggle = true;
 					}
-					
-					//final boolean isAttackFinal = isAttack;
+
 					//Make sure any sub-action functions on the main thread as to not
 					//cause more issues than it's worth.
+					final IFakeMob baseMobFinal = baseMob;
 					Bukkit.getScheduler().runTask(FakeMobs.getInstance(), () ->
 					{
 						if(isAttack)
 						{
-							baseMob.onAttack(event.getPlayer());
+							baseMobFinal.onAttack(event.getPlayer());
 						}
 						else
 						{
-							baseMob.onRightClick(event.getPlayer());
+							baseMobFinal.onRightClick(event.getPlayer());
 						}
 					});
 				}

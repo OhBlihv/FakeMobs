@@ -1,16 +1,26 @@
 package me.ohblihv.FakeMobs.mobs;
 
+import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityHeadRotation;
+import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.LocationUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.management.MobManager;
 import me.ohblihv.FakeMobs.mobs.actions.ActionFactory;
 import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
+import me.ohblihv.FakeMobs.mobs.nms.NMSMob;
 import me.ohblihv.FakeMobs.util.PacketUtil;
+import me.ohblihv.FakeMobs.util.lib.MathHelper;
+import net.minecraft.server.v1_14_R1.EntityTypes;
+import net.minecraft.server.v1_14_R1.IRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -20,12 +30,18 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
  */
-public abstract class BaseMob
+public abstract class BaseMob implements IFakeMob
 {
 
 	@Getter
@@ -36,13 +52,26 @@ public abstract class BaseMob
 
 	@Getter
 	@Setter(AccessLevel.PROTECTED)
-	private int entityId;
+	private int entityId, nameEntityId;
 	
 	@Getter
 	private EntityType entityType = EntityType.VILLAGER;
+	private static final float DEFAULT_PLAYER_HEIGHT = 1.8f;
+	@Getter
+	private double mobHeight = DEFAULT_PLAYER_HEIGHT;
 	void setEntityType(EntityType entityType)
 	{
 		this.entityType = entityType;
+		mobHeight = NMSMob.getMobHeight(getEntityType());
+		switch(entityType)
+		{
+			case ENDERMAN: mobHeight = 2.9; break;
+			case IRON_GOLEM: mobHeight = 2.7; break;
+			case SHEEP: case COW: case PIG: mobHeight = 1.25; break;
+			case HORSE: mobHeight = 2.2; break;
+			case CHICKEN: mobHeight = 1.0; break;
+			case PLAYER: mobHeight = 1.8; break;
+		}
 
 		if(entityType != EntityType.PLAYER)
 		{
@@ -54,6 +83,8 @@ public abstract class BaseMob
 	@Getter private final Location  mobLocation;
 	@Getter private final World     mobWorld;
 	@Getter private final int       chunkX, chunkZ;
+
+	@Getter private final String displayName;
 	
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
@@ -67,12 +98,22 @@ public abstract class BaseMob
 		this.chunkX = chunk.getX();
 		this.chunkZ = chunk.getZ();
 		this.entityId = entityId;
+
+		// Name for the name hologram
+		this.nameEntityId = MobManager.getEntityId();
+		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
 		
 		//Trigger the DataWatcher cache for this entity type
 		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), entityType);
+		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
 		
 		loadActions(configurationSection.getConfigurationSection("actions.LEFT_CLICK"), attackActions);
 		loadActions(configurationSection.getConfigurationSection("actions.RIGHT_CLICK"), interactActions);
+	}
+
+	public List<Integer> getAllDelegateMobsIds()
+	{
+		return Arrays.asList(nameEntityId);
 	}
 	
 	private void loadActions(ConfigurationSection configurationSection, Deque<BaseAction> actionDeque)
@@ -92,7 +133,7 @@ public abstract class BaseMob
 			}
 			catch(IllegalArgumentException e)
 			{
-				BUtil.logError(e.getMessage());
+				BUtil.log(e.getMessage());
 				continue;
 			}
 			
@@ -141,6 +182,8 @@ public abstract class BaseMob
 				//Remove the boss if previously in the nearby players collection
 				if(nearbyPlayers.contains(player))
 				{
+					onDespawn(player);
+
 					PacketUtil.sendDestroyPacket(player, entityId);
 
 					nearbyPlayers.remove(player);
@@ -153,6 +196,8 @@ public abstract class BaseMob
 
 	public void spawnMob(Player player)
 	{
+		onSpawn(player);
+
 		PacketUtil.sendSpawnPacket(player, this);
 	}
 
@@ -181,6 +226,8 @@ public abstract class BaseMob
 	{
 		for(Player player : nearbyPlayers)
 		{
+			onDespawn(player);
+
 			PacketUtil.sendDestroyPacket(player, entityId);
 		}
 	}
@@ -220,14 +267,115 @@ public abstract class BaseMob
 		}
 	}
 
-	public void onTick(int tick)
+	private final Map<String, LastLookDirection> currentlyLookingAt = new HashMap<>();
+	@AllArgsConstructor
+	private class LastLookDirection
 	{
 
+		//Default to invalid numbers
+		public int yaw, pitch;
+
+	}
+
+	public void onTick(int tick)
+	{
+		Location currentLocation = getMobLocation();
+		if(mobHeight != DEFAULT_PLAYER_HEIGHT)
+		{
+			currentLocation = currentLocation.clone().add(0, 0 - (DEFAULT_PLAYER_HEIGHT - mobHeight), 0);
+		}
+
+		for(Player player : getNearbyPlayers())
+		{
+			if(!player.isOnline())
+			{
+				continue; //Will be cleaned up later
+			}
+
+			Location playerLocation = player.getLocation();
+			if(playerLocation == null)
+			{
+				continue; //Not initialized yet
+			}
+
+			if(playerLocation.getWorld() == getMobWorld() && playerLocation.distance(currentLocation) < 10)
+			{
+				//Look at player
+				double dx = playerLocation.getX() - currentLocation.getX(),
+					dy = playerLocation.getY() - (currentLocation.getY()),
+					dz = playerLocation.getZ() - currentLocation.getZ();
+
+				double var7 = (double) MathHelper.sqrt(dx * dx + dz * dz);
+				float yaw   = (float) (MathHelper.b(dz, dx) * 180.0D / Math.PI) - 90.0F;
+				float pitch = (float) (-(MathHelper.b(dy, var7) * 180.0D / Math.PI));
+
+				LastLookDirection lastLookDirection = currentlyLookingAt.get(player.getName());
+				if(lastLookDirection == null)
+				{
+					currentlyLookingAt.put(player.getName(), new LastLookDirection((int) yaw, (int) pitch));
+				}
+				else if(lastLookDirection.pitch == (int) pitch && lastLookDirection.yaw == (int) yaw)
+				{
+					continue; //Ignore look. Player has not moved enough.
+				}
+				else
+				{
+					lastLookDirection.pitch = (int) pitch;
+					lastLookDirection.yaw = (int) yaw;
+				}
+
+				PacketUtil.sendLookPacket(player, yaw, pitch, getEntityId());
+
+				WrapperPlayServerEntityHeadRotation headRotationPacket = new WrapperPlayServerEntityHeadRotation();
+
+				headRotationPacket.setEntityID(getEntityId());
+				headRotationPacket.setHeadYaw((byte) MathHelper.d(yaw * 256.0F / 360.0F));
+
+				headRotationPacket.sendPacket(player);
+			}
+			else if(currentlyLookingAt.remove(player.getName()) != null)
+			{
+				//Reset location
+				PacketUtil.sendLookPacket(player, currentLocation.getYaw(), currentLocation.getPitch(), getEntityId());
+
+				WrapperPlayServerEntityHeadRotation headRotationPacket = new WrapperPlayServerEntityHeadRotation();
+
+				headRotationPacket.setEntityID(getEntityId());
+				headRotationPacket.setHeadYaw((byte) MathHelper.d(currentLocation.getYaw() * 256.0F / 360.0F));
+
+				headRotationPacket.sendPacket(player);
+			}
+			/*else
+			{
+				BUtil.log("No action.");
+			}*/
+		}
+	}
+
+	//Facing Direction Helper
+	private float a(float var1, float var2, float var3)
+	{
+		float var4 = MathHelper.g(var2 - var1);
+		if (var4 > var3) {
+			var4 = var3;
+		}
+
+		if (var4 < -var3) {
+			var4 = -var3;
+		}
+
+		return var1 + var4;
 	}
 
 	/*
 	 * API
 	 */
+
+	public void setMetadata(WrappedDataWatcher watcher)
+	{
+		// No fire/sprinting effects etc.
+		watcher.setObject(0, (byte) 0);
+	}
 
 	public void addAttackHandler(BaseAction action)
 	{
@@ -247,6 +395,43 @@ public abstract class BaseMob
 		}
 
 		interactActions.add(action);
+	}
+
+	public void onSpawn(Player player)
+	{
+		WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
+
+		//Set entity type id
+		spawnPacket.getHandle().getIntegers().write(1, IRegistry.ENTITY_TYPE.a(EntityTypes.ARMOR_STAND));
+
+		spawnPacket.setEntityID(nameEntityId);
+		spawnPacket.setUniqueId(UUID.randomUUID());
+		spawnPacket.setX(mobLocation.getX());
+		spawnPacket.setY(mobLocation.getY() - 1.8 + mobHeight - 0.1);
+		spawnPacket.setZ(mobLocation.getZ());
+
+		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
+
+		// OptChat from 1.13+
+		Optional<?> opt = Optional.of(WrappedChatComponent.fromChatMessage(displayName)[0].getHandle());
+		watcher.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), opt);
+
+		// Invisible
+		watcher.setObject(0, (byte) 0x20);
+		watcher.setObject(3, true);
+
+		spawnPacket.setMetadata(watcher);
+
+		spawnPacket.sendPacket(player);
+	}
+
+	public void onDespawn(Player player)
+	{
+		WrapperPlayServerEntityDestroy destroyPacket = new WrapperPlayServerEntityDestroy();
+
+		destroyPacket.setEntityIds(new int[] {nameEntityId});
+
+		destroyPacket.sendPacket(player);
 	}
 
 }

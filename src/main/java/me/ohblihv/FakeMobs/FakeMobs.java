@@ -139,6 +139,13 @@ public class FakeMobs extends JavaPlugin implements Listener
 			SkinHandler.save();
 			sender.sendMessage("§c§l(!) §cSaved Skin Cache in textures.json");
 		}
+		else if(event.getCommand().startsWith("skinreload"))
+		{
+			event.setCancelled(true);
+
+			SkinHandler.load();
+			sender.sendMessage("§c§l(!) §cReloaded Skin Cache from textures.json");
+		}
 		else if(event.getCommand().startsWith("skinload"))
 		{
 			event.setCancelled(true);

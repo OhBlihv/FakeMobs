@@ -4,6 +4,7 @@ import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.file.FlatFile;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
+import me.ohblihv.FakeMobs.mobs.DelegateMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import me.ohblihv.FakeMobs.mobs.SimpleMob;
 import org.bukkit.Bukkit;
@@ -24,6 +25,7 @@ public class MobManager
 	private static MobRunnable mobRunnable;
 
 	protected static final ConcurrentHashMap<Integer, BaseMob> mobMap = new ConcurrentHashMap<>();
+	protected static final ConcurrentHashMap<Integer, DelegateMob> delegateMobMap = new ConcurrentHashMap<>();
 	private static final Set<String> usedWorlds = new HashSet<>();
 
 	//Contains players who cannot currently visualise the Mobs
@@ -111,6 +113,11 @@ public class MobManager
 					baseMob = new NPCMob(entityId, configurationSection);
 					break;
 				}
+				/*case VILLAGER:
+				{
+					baseMob = new VillagerMob(entityId, configurationSection);
+					break;
+				}*/
 				default:
 				{
 					baseMob = new SimpleMob(entityId, configurationSection);
@@ -136,17 +143,42 @@ public class MobManager
 
 		mobRunnable.mobIdSet.add(baseMob.getEntityId());
 
+		for(int delegateMobId : baseMob.getAllDelegateMobsIds())
+		{
+			addDelegateMob(delegateMobId, baseMob);
+		}
+
 		//Spawns itself within 2 seconds
+	}
+
+	public static void addDelegateMob(int entityId, BaseMob hostMob)
+	{
+		delegateMobMap.put(entityId, new DelegateMob(hostMob));
+	}
+
+	public static void removeDelegateMob(int entityId)
+	{
+		delegateMobMap.remove(entityId);
 	}
 
 	public static void removeMob(int entityId)
 	{
-		mobMap.remove(entityId);
+		BaseMob baseMob = mobMap.remove(entityId);
+
+		for(int delegateMobId : baseMob.getAllDelegateMobsIds())
+		{
+			removeDelegateMob(delegateMobId);
+		}
 	}
 	
 	public static BaseMob getMob(int entityId)
 	{
 		return mobMap.get(entityId);
+	}
+
+	public static DelegateMob getDelegateMob(int entityId)
+	{
+		return delegateMobMap.get(entityId);
 	}
 
 	public static Collection<BaseMob> getAllMobs()

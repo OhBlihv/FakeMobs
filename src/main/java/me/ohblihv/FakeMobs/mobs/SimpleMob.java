@@ -20,7 +20,7 @@ public class SimpleMob extends BaseMob
 		}
 		catch(IllegalArgumentException e)
 		{
-			BUtil.logError("Unknown entity type '" + configurationSection.getString("options.mob-type") + "'. Defaulting to VILLAGER.");
+			BUtil.log("Unknown entity type '" + configurationSection.getString("options.mob-type") + "'. Defaulting to VILLAGER.");
 		}
 	}
 	
