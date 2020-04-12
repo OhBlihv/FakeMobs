@@ -1,8 +1,10 @@
 package me.ohblihv.FakeMobs.mobs;
 
 import com.mojang.authlib.properties.Property;
+import com.skytonia.SkyCore.SkyCore;
 import com.skytonia.SkyCore.items.construction.ItemContainerConstructor;
 import com.skytonia.SkyCore.util.BUtil;
+import com.skytonia.SkyCore.util.SupportedVersion;
 import lombok.Getter;
 import me.ohblihv.FakeMobs.npc.NPCProfile;
 import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer;
@@ -150,7 +152,14 @@ public class NPCMob extends BaseMob
 			return itemStack;
 		}
 
-		itemMeta.spigot().setUnbreakable(true);
+		if(SkyCore.getCurrentVersion().isAtLeast(SupportedVersion.ONE_THIRTEEN))
+		{
+			// Ignore for now
+		}
+		else
+		{
+			itemMeta.spigot().setUnbreakable(true);
+		}
 
 		itemStack.setItemMeta(itemMeta);
 
