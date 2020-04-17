@@ -13,7 +13,12 @@ public class FakeEntityPlayer115 extends EntityPlayer implements FakeEntityPlaye
 	{
 		super(srv, world, game, interact);
 
-		this.datawatcher.set(bq, Byte.MAX_VALUE); //All Skin Parts Enabled
+		this.datawatcher.set(bq, (byte) 0xFF); //All Skin Parts Enabled
 	}
 
+	@Override
+	public Object getDatawWatcher()
+	{
+		return super.getDataWatcher();
+	}
 }

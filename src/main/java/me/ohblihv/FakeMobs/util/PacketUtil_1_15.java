@@ -3,13 +3,17 @@ package me.ohblihv.FakeMobs.util;
 import com.comphenix.packetwrapper.AbstractPacket;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityEquipment;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
+import com.skytonia.SkyCore.SkyCore;
 import com.skytonia.SkyCore.util.BUtil;
+import com.skytonia.SkyCore.util.SupportedVersion;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
@@ -18,6 +22,7 @@ import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer115;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_13_2;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
+import net.minecraft.server.v1_15_R1.DataWatcher;
 import net.minecraft.server.v1_15_R1.Entity;
 import net.minecraft.server.v1_15_R1.EntityHuman;
 import net.minecraft.server.v1_15_R1.EntityPlayer;
@@ -27,6 +32,7 @@ import net.minecraft.server.v1_15_R1.MathHelper;
 import net.minecraft.server.v1_15_R1.MinecraftServer;
 import net.minecraft.server.v1_15_R1.PacketPlayOutEntity;
 import net.minecraft.server.v1_15_R1.PacketPlayOutEntityHeadRotation;
+import net.minecraft.server.v1_15_R1.PacketPlayOutEntityMetadata;
 import net.minecraft.server.v1_15_R1.PacketPlayOutNamedEntitySpawn;
 import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerInfo;
 import net.minecraft.server.v1_15_R1.PlayerConnection;
@@ -61,7 +67,6 @@ public class PacketUtil_1_15 implements IPacketUtil
 		spawnPacket.setEntityID(baseMob.getEntityId());
 
 		//typeId is unused as of 1.13
-		//spawnPacket.setType(baseMob.getEntityType());
 		EntityTypes entityTypes;
 		try
 		{
@@ -104,10 +109,26 @@ public class PacketUtil_1_15 implements IPacketUtil
 			e.printStackTrace();
 		}
 
-		spawnPacket.setMetadata(watcher);
+		// 1.15 does not contain the metadata in the spawn packet.
+		WrapperPlayServerEntityMetadata metadataPacket = null;
+		if(SkyCore.getCurrentVersion().isAtLeast(SupportedVersion.ONE_FIFTEEN))
+		{
+			metadataPacket = new WrapperPlayServerEntityMetadata();
+			metadataPacket.setMetadata(watcher.getWatchableObjects());
+			metadataPacket.setEntityID(baseMob.getEntityId());
+		}
+		else
+		{
+			spawnPacket.setMetadata(watcher);
+		}
 
 		//BUtil.log("Spawning mob as " + baseMob.getEntityType() + " with id " + baseMob.getEntityId());
 		spawnPacket.sendPacket(player);
+
+		if(metadataPacket != null)
+		{
+			metadataPacket.sendPacket(player);
+		}
 	}
 
 	@Override
@@ -121,6 +142,16 @@ public class PacketUtil_1_15 implements IPacketUtil
 		playerConnection.sendPacket(infoPacket);
 
 		playerConnection.sendPacket(new PacketPlayOutNamedEntitySpawn((EntityHuman) npcMob.getFakeEntityPlayer()));
+
+		WrapperPlayServerEntityMetadata metadataPacket = new WrapperPlayServerEntityMetadata(PacketContainer.fromPacket(
+			new PacketPlayOutEntityMetadata(npcMob.getEntityId(), (DataWatcher) npcMob.getFakeEntityPlayer().getDatawWatcher(), true)
+		));
+
+		WrappedDataWatcher wrappedDataWatcher = new WrappedDataWatcher(metadataPacket.getMetadata());
+		wrappedDataWatcher.setObject(16, (byte) 0xFF);
+
+		metadataPacket.setMetadata(wrappedDataWatcher.getWatchableObjects());
+		metadataPacket.sendPacket(player);
 
 		new BukkitRunnable()
 		{
@@ -231,7 +262,7 @@ public class PacketUtil_1_15 implements IPacketUtil
 		PacketPlayOutEntity.PacketPlayOutEntityLook lookPacket = new PacketPlayOutEntity.PacketPlayOutEntityLook(
 			entityId,
 			(byte) MathHelper.d(yaw * 256.0F / 360.0F),
-			(byte) MathHelper.d(pitch * 256.0F / 360.0F), false
+			(byte) MathHelper.d(pitch * 256.0F / 360.0F), true
 		);
 
 		((CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);

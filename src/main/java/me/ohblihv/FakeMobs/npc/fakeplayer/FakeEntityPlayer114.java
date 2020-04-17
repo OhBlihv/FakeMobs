@@ -16,4 +16,10 @@ public class FakeEntityPlayer114 extends EntityPlayer implements FakeEntityPlaye
 		this.datawatcher.set(bt, Byte.MAX_VALUE); //All Skin Parts Enabled
 	}
 
+	@Override
+	public Object getDatawWatcher()
+	{
+		return super.getDataWatcher();
+	}
+
 }

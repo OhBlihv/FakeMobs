@@ -1,10 +1,10 @@
 package me.ohblihv.FakeMobs.mobs;
 
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import net.minecraft.server.v1_14_R1.VillagerData;
-import net.minecraft.server.v1_14_R1.VillagerProfession;
-import net.minecraft.server.v1_14_R1.VillagerType;
+import net.minecraft.server.v1_15_R1.VillagerProfession;
+import net.minecraft.server.v1_15_R1.VillagerType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 
 public class VillagerMob extends SimpleMob
 {
@@ -22,6 +22,8 @@ public class VillagerMob extends SimpleMob
 	public VillagerMob(int entityId, ConfigurationSection configurationSection)
 	{
 		super(entityId, configurationSection);
+
+		setEntityType(EntityType.VINDICATOR);
 
 		if(configurationSection.contains("options"))
 		{
@@ -46,11 +48,11 @@ public class VillagerMob extends SimpleMob
 					break;
 			}*/
 
-			villagerType = VillagerType.a(villagerTypeString.toLowerCase());
+			//villagerType = VillagerType.a(villagerTypeString.toLowerCase());
 
 			//
 
-			villagerProfessionString = configurationSection.getString("options.villager-job", "NONE").toUpperCase();
+			//villagerProfessionString = configurationSection.getString("options.villager-job", "NONE").toUpperCase();
 			//villagerProfession = WrappedVillagerData.Profession.valueOf(villagerProfessionString);
 
 			/*switch(villagerProfessionString)
@@ -76,14 +78,14 @@ public class VillagerMob extends SimpleMob
 					break;
 			}*/
 
-			try
+			/*try
 			{
 				villagerProfession = (VillagerProfession) VillagerProfession.class.getField(villagerProfessionString).get(null);
 			}
 			catch (NoSuchFieldException | IllegalAccessException e)
 			{
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
 
@@ -92,9 +94,6 @@ public class VillagerMob extends SimpleMob
 	{
 		super.setMetadata(watcher);
 
-		watcher.setObject(16, WrappedDataWatcher.Registry.get(VillagerData.class),
-			new VillagerData(
-				villagerType, villagerProfession, 1000
-			));
+		watcher.setObject(15, true);
 	}
 }

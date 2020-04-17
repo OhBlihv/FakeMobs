@@ -3,5 +3,6 @@ version: ${project.version}
 author: OhBlihv
 main: ${project.groupId}.${project.artifactId}.${project.artifactId}
 api-version: 1.14
+softdepend: [ProtocolLib, SkyCore]
 commands:
     ${project.artifactId}:

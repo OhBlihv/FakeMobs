@@ -36,6 +36,7 @@ public class PacketUtil
 		}
 		
 		Entity entity = world.spawnEntity(new Location(world, 0, 256, 0), type);
+
 		watcher = WrappedDataWatcher.getEntityWatcher(entity).deepClone();
 		watcherCache.put(type, watcher);
 		

@@ -2,12 +2,15 @@ package me.ohblihv.FakeMobs.mobs;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityHeadRotation;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
 import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.skytonia.SkyCore.SkyCore;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.LocationUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
+import com.skytonia.SkyCore.util.SupportedVersion;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,8 +22,6 @@ import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
 import me.ohblihv.FakeMobs.mobs.nms.NMSMob;
 import me.ohblihv.FakeMobs.util.PacketUtil;
 import me.ohblihv.FakeMobs.util.lib.MathHelper;
-import net.minecraft.server.v1_14_R1.EntityTypes;
-import net.minecraft.server.v1_14_R1.IRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -29,6 +30,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -88,6 +91,38 @@ public abstract class BaseMob implements IFakeMob
 	
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
+
+	private static int armourStandId;
+	static
+	{
+		try
+		{
+			final String nmsPackage = "net.minecraft.server.v1_" + SkyCore.getCurrentVersion().getVersionNum() + "_R1.";
+
+			Object entityRegistry = Class.forName(nmsPackage + "IRegistry").getDeclaredField("ENTITY_TYPE").get(null);
+			// Citizens support
+			if(entityRegistry.getClass().getSimpleName().equals("CustomEntityRegistry"))
+			{
+				Class<?> entityTypesClass =  Class.forName(nmsPackage + "EntityTypes");
+				Field armourStandEntityTypeField = entityTypesClass.getDeclaredField("ARMOR_STAND");
+
+				armourStandId = (int) entityRegistry.getClass().getDeclaredMethod("a", Object.class).invoke(entityRegistry, armourStandEntityTypeField.get(null));
+			}
+			else
+			{
+				Class<?> entityTypesClass =  Class.forName(nmsPackage + "EntityTypes");
+				Field armourStandEntityTypeField = entityTypesClass.getDeclaredField("ARMOR_STAND");
+
+				armourStandId = (int) entityRegistry.getClass().getDeclaredMethod("a", Object.class).invoke(entityRegistry, armourStandEntityTypeField.get(null));
+			}
+
+			BUtil.log("Loaded ArmorStand ID as " + armourStandId);
+		}
+		catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+	}
 
 	public BaseMob(int entityId, ConfigurationSection configurationSection)
 	{
@@ -399,30 +434,49 @@ public abstract class BaseMob implements IFakeMob
 
 	public void onSpawn(Player player)
 	{
-		WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
+		if(displayName != null && !displayName.isEmpty())
+		{
+			WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
 
-		//Set entity type id
-		spawnPacket.getHandle().getIntegers().write(1, IRegistry.ENTITY_TYPE.a(EntityTypes.ARMOR_STAND));
+			//Set entity type id
+			spawnPacket.getHandle().getIntegers().write(1, armourStandId);
 
-		spawnPacket.setEntityID(nameEntityId);
-		spawnPacket.setUniqueId(UUID.randomUUID());
-		spawnPacket.setX(mobLocation.getX());
-		spawnPacket.setY(mobLocation.getY() - 1.8 + mobHeight - 0.1);
-		spawnPacket.setZ(mobLocation.getZ());
+			spawnPacket.setEntityID(nameEntityId);
+			spawnPacket.setUniqueId(UUID.randomUUID());
+			spawnPacket.setX(mobLocation.getX());
+			spawnPacket.setY(mobLocation.getY() - 1.8 + mobHeight - 0.1);
+			spawnPacket.setZ(mobLocation.getZ());
 
-		WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
+			WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
 
-		// OptChat from 1.13+
-		Optional<?> opt = Optional.of(WrappedChatComponent.fromChatMessage(displayName)[0].getHandle());
-		watcher.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), opt);
+			// OptChat from 1.13+
+			Optional<?> opt = Optional.of(WrappedChatComponent.fromChatMessage(displayName)[0].getHandle());
+			watcher.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), opt);
 
-		// Invisible
-		watcher.setObject(0, (byte) 0x20);
-		watcher.setObject(3, true);
+			// Invisible
+			watcher.setObject(0, (byte) 0x20);
+			watcher.setObject(3, true);
 
-		spawnPacket.setMetadata(watcher);
+			// 1.15 does not contain the metadata in the spawn packet.
+			WrapperPlayServerEntityMetadata metadataPacket = null;
+			if(SkyCore.getCurrentVersion().isAtLeast(SupportedVersion.ONE_FIFTEEN))
+			{
+				metadataPacket = new WrapperPlayServerEntityMetadata();
+				metadataPacket.setMetadata(watcher.getWatchableObjects());
+				metadataPacket.setEntityID(nameEntityId);
+			}
+			else
+			{
+				spawnPacket.setMetadata(watcher);
+			}
 
-		spawnPacket.sendPacket(player);
+			spawnPacket.sendPacket(player);
+
+			if(metadataPacket != null)
+			{
+				metadataPacket.sendPacket(player);
+			}
+		}
 	}
 
 	public void onDespawn(Player player)

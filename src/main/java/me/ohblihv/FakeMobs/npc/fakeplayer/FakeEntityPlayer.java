@@ -7,4 +7,6 @@ public interface FakeEntityPlayer
 
 	int getId();
 
+	Object getDatawWatcher();
+
 }
