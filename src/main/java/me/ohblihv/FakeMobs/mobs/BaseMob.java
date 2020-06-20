@@ -48,7 +48,7 @@ public abstract class BaseMob implements IFakeMob
 {
 
 	@Getter
-    private final ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
+	private final ArrayDeque<Player> nearbyPlayers = new ArrayDeque<>();
 
 	@Getter
 	private int viewDistance = 30;
@@ -56,7 +56,7 @@ public abstract class BaseMob implements IFakeMob
 	@Getter
 	@Setter(AccessLevel.PROTECTED)
 	private int entityId, nameEntityId;
-	
+
 	@Getter
 	private EntityType entityType = EntityType.VILLAGER;
 	private static final float DEFAULT_PLAYER_HEIGHT = 1.8f;
@@ -65,7 +65,6 @@ public abstract class BaseMob implements IFakeMob
 	void setEntityType(EntityType entityType)
 	{
 		this.entityType = entityType;
-		mobHeight = NMSMob.getMobHeight(getEntityType());
 		switch(entityType)
 		{
 			case ENDERMAN: mobHeight = 2.9; break;
@@ -74,6 +73,8 @@ public abstract class BaseMob implements IFakeMob
 			case HORSE: mobHeight = 2.2; break;
 			case CHICKEN: mobHeight = 1.0; break;
 			case PLAYER: mobHeight = 1.8; break;
+			case SNOWMAN: mobHeight = 1.9; break;
+			default: mobHeight = NMSMob.getMobHeight(getEntityType());
 		}
 
 		if(entityType != EntityType.PLAYER)
@@ -88,9 +89,9 @@ public abstract class BaseMob implements IFakeMob
 	@Getter private final int       chunkX, chunkZ;
 
 	@Getter private final String displayName;
-	
+
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
-									interactActions = new ArrayDeque<>();
+		interactActions = new ArrayDeque<>();
 
 	private static int armourStandId;
 	static
@@ -137,11 +138,11 @@ public abstract class BaseMob implements IFakeMob
 		// Name for the name hologram
 		this.nameEntityId = MobManager.getEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
-		
+
 		//Trigger the DataWatcher cache for this entity type
 		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), entityType);
 		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
-		
+
 		loadActions(configurationSection.getConfigurationSection("actions.LEFT_CLICK"), attackActions);
 		loadActions(configurationSection.getConfigurationSection("actions.RIGHT_CLICK"), interactActions);
 	}
@@ -150,7 +151,7 @@ public abstract class BaseMob implements IFakeMob
 	{
 		return Arrays.asList(nameEntityId);
 	}
-	
+
 	private void loadActions(ConfigurationSection configurationSection, Deque<BaseAction> actionDeque)
 	{
 		//This click type is not defined
@@ -158,7 +159,7 @@ public abstract class BaseMob implements IFakeMob
 		{
 			return;
 		}
-		
+
 		for(String actionName : configurationSection.getKeys(false))
 		{
 			BaseAction action;
@@ -171,7 +172,7 @@ public abstract class BaseMob implements IFakeMob
 				BUtil.log(e.getMessage());
 				continue;
 			}
-			
+
 			actionDeque.add(action);
 		}
 	}
@@ -206,7 +207,7 @@ public abstract class BaseMob implements IFakeMob
 				{
 					continue;
 				}
-				
+
 				nearbyPlayers.add(player);
 
 				//Spawn in the mob
@@ -248,7 +249,7 @@ public abstract class BaseMob implements IFakeMob
 			}
 		}).runTaskLater(10);
 	}
-	
+
 	public boolean isAtLocation(int chunkX, int chunkZ)
 	{
 		//Attempt to allow players to interact within 2 chunks of the mob
@@ -266,7 +267,7 @@ public abstract class BaseMob implements IFakeMob
 			PacketUtil.sendDestroyPacket(player, entityId);
 		}
 	}
-	
+
 	public void die()
 	{
 		try
@@ -281,11 +282,11 @@ public abstract class BaseMob implements IFakeMob
 		}
 
 		nearbyPlayers.clear();
-		
+
 		//Let the rest of the plugin know we've died.
 		MobManager.removeMob(entityId);
 	}
-	
+
 	public void onAttack(Player player)
 	{
 		for(BaseAction action : attackActions)
@@ -293,7 +294,7 @@ public abstract class BaseMob implements IFakeMob
 			action.doAction(player);
 		}
 	}
-	
+
 	public void onRightClick(Player player)
 	{
 		for(BaseAction action : interactActions)
