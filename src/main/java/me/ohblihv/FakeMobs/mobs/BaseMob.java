@@ -7,6 +7,7 @@ import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.skytonia.SkyCore.SkyCore;
+import com.skytonia.SkyCore.clientside.ClientSideHandler;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.LocationUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
@@ -65,7 +66,7 @@ public abstract class BaseMob implements IFakeMob
 	void setEntityType(EntityType entityType)
 	{
 		this.entityType = entityType;
-		mobHeight = NMSMob.getMobHeight(getEntityType());
+		//REMOVE ME mobHeight = NMSMob.getMobHeight(getEntityType());
 		switch(entityType)
 		{
 			case ENDERMAN: mobHeight = 2.9; break;
@@ -74,6 +75,7 @@ public abstract class BaseMob implements IFakeMob
 			case HORSE: mobHeight = 2.2; break;
 			case CHICKEN: mobHeight = 1.0; break;
 			case PLAYER: mobHeight = 1.8; break;
+			default: mobHeight = NMSMob.getMobHeight(getEntityType()); break;
 		}
 
 		if(entityType != EntityType.PLAYER)
@@ -135,7 +137,7 @@ public abstract class BaseMob implements IFakeMob
 		this.entityId = entityId;
 
 		// Name for the name hologram
-		this.nameEntityId = MobManager.getEntityId();
+		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
 		
 		//Trigger the DataWatcher cache for this entity type

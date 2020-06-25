@@ -1,5 +1,6 @@
 package me.ohblihv.FakeMobs.management;
 
+import com.skytonia.SkyCore.clientside.ClientSideHandler;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.file.FlatFile;
 import me.ohblihv.FakeMobs.FakeMobs;
@@ -86,21 +87,9 @@ public class MobManager
 		return !mobMap.isEmpty();
 	}
 
-	private static int nextEntityId = Integer.MAX_VALUE - 1;
-	//private static int nextEntityId = -1;
-	
-	public static int getEntityId()
-	{
-		int returnedId = nextEntityId;
-		
-		nextEntityId--;
-		
-		return returnedId;
-	}
-
 	public static void loadMob(ConfigurationSection configurationSection)
 	{
-		int entityId = getEntityId();
+		int entityId = ClientSideHandler.getUniqueEntityId();
 		
 		//TODO: Introduce factory for determine mob type
 		BaseMob baseMob;

@@ -1,6 +1,7 @@
 package me.ohblihv.FakeMobs;
 
-import com.destroystokyo.paper.profile.ProfileProperty;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.RunnableShorthand;
 import lombok.Getter;
@@ -21,6 +22,8 @@ import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.Field;
 
 /**
  * Created by Chris Brown (OhBlihv) on 9/09/2016.
@@ -109,7 +112,23 @@ public class FakeMobs extends JavaPlugin implements Listener
 			}
 
 			SkullMeta skullMeta = (SkullMeta) itemInHand.getItemMeta();
-			for(ProfileProperty property : skullMeta.getPlayerProfile().getProperties())
+			GameProfile profile = null;
+			{
+				try
+				{
+					Field field = Class.forName("org.bukkit.craftbukkit.v1_16_R1.inventory.CraftMetaSkull").getField("profile");
+					field.setAccessible(true);
+
+					profile = (GameProfile) field.get(skullMeta);
+				}
+				catch (NoSuchFieldException | ClassNotFoundException | IllegalAccessException e)
+				{
+					e.printStackTrace();
+					return;
+				}
+			}
+
+			for(Property property : profile.getProperties().values())
 			{
 				if(property.getName().equals("textures"))
 				{
