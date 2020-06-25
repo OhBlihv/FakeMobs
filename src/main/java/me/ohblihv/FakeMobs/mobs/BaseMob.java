@@ -66,7 +66,7 @@ public abstract class BaseMob implements IFakeMob
 	void setEntityType(EntityType entityType)
 	{
 		this.entityType = entityType;
-		//REMOVE ME mobHeight = NMSMob.getMobHeight(getEntityType());
+		mobHeight = NMSMob.getMobHeight(getEntityType());
 		switch(entityType)
 		{
 			case ENDERMAN: mobHeight = 2.9; break;
@@ -75,7 +75,8 @@ public abstract class BaseMob implements IFakeMob
 			case HORSE: mobHeight = 2.2; break;
 			case CHICKEN: mobHeight = 1.0; break;
 			case PLAYER: mobHeight = 1.8; break;
-			default: mobHeight = NMSMob.getMobHeight(getEntityType()); break;
+			case SNOWMAN: mobHeight = 1.9; break;
+			default: mobHeight = NMSMob.getMobHeight(getEntityType());
 		}
 
 		if(entityType != EntityType.PLAYER)
@@ -137,7 +138,7 @@ public abstract class BaseMob implements IFakeMob
 		this.entityId = entityId;
 
 		// Name for the name hologram
-		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
+		this.nameEntityId = MobManager.getEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
 		
 		//Trigger the DataWatcher cache for this entity type
