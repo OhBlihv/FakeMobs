@@ -138,7 +138,7 @@ public abstract class BaseMob implements IFakeMob
 		this.entityId = entityId;
 
 		// Name for the name hologram
-		this.nameEntityId = MobManager.getEntityId();
+		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
 		
 		//Trigger the DataWatcher cache for this entity type
