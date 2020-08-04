@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import me.ohblihv.FakeMobs.FakeMobs;
+import me.ohblihv.FakeMobs.hologram.MobHologram;
 import me.ohblihv.FakeMobs.management.MobManager;
 import me.ohblihv.FakeMobs.mobs.actions.ActionFactory;
 import me.ohblihv.FakeMobs.mobs.actions.BaseAction;
@@ -91,6 +92,7 @@ public abstract class BaseMob implements IFakeMob
 	@Getter private final int       chunkX, chunkZ;
 
 	@Getter private final String displayName;
+	@Getter private final Deque<MobHologram> bobbingHolograms;
 	
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
@@ -140,6 +142,23 @@ public abstract class BaseMob implements IFakeMob
 		// Name for the name hologram
 		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
+		this.bobbingHolograms = new ArrayDeque<>();
+		{
+			List<String> bobbingHologramContent = BUtil.translateColours(configurationSection.getStringList("options.bobbing-holograms"));
+			if(bobbingHologramContent != null)
+			{
+				Location hologramHeight = this.mobLocation.clone().add(0,  1.8 + mobHeight - 0.1, 0);
+
+				int hologramId = 0;
+				for (String hologramContent : bobbingHologramContent)
+				{
+					MobHologram mobHologram = new MobHologram(hologramHeight = hologramHeight.add(0, 0.15, 0), hologramContent);
+					this.bobbingHolograms.add(mobHologram);
+
+					ClientSideHandler.registerEntity("FakeMobs_Id-" + entityId + "-" + hologramId++, mobHologram);
+				}
+			}
+		}
 		
 		//Trigger the DataWatcher cache for this entity type
 		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), entityType);
@@ -268,6 +287,12 @@ public abstract class BaseMob implements IFakeMob
 
 			PacketUtil.sendDestroyPacket(player, entityId);
 		}
+
+		for (int hologramId = 0;hologramId < this.bobbingHolograms.size();hologramId++)
+		{
+			ClientSideHandler.deregisterEntity("FakeMobs_Id-" + entityId + "-" + hologramId++);
+		}
+		this.bobbingHolograms.clear();
 	}
 	
 	public void die()

@@ -34,6 +34,9 @@ mobs:
         options:
             mob-type: PLAYER
             displayname: "&e "
+            bobbing-holograms:
+            - "&fExample Line One"
+            - "&cExample Line Two"
             skin: SpookySkin
             equipment:
                 head:
