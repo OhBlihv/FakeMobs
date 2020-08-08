@@ -6,6 +6,7 @@ import com.skytonia.SkyCore.util.file.FlatFile;
 import me.ohblihv.FakeMobs.FakeMobs;
 import me.ohblihv.FakeMobs.mobs.BaseMob;
 import me.ohblihv.FakeMobs.mobs.DelegateMob;
+import me.ohblihv.FakeMobs.mobs.HoglinMob;
 import me.ohblihv.FakeMobs.mobs.NPCMob;
 import me.ohblihv.FakeMobs.mobs.SimpleMob;
 import org.bukkit.Bukkit;
@@ -107,6 +108,11 @@ public class MobManager
 					baseMob = new VillagerMob(entityId, configurationSection);
 					break;
 				}*/
+				case HOGLIN:
+				{
+					baseMob = new HoglinMob(entityId, configurationSection);
+					break;
+				}
 				default:
 				{
 					baseMob = new SimpleMob(entityId, configurationSection);
