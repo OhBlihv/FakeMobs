@@ -77,6 +77,7 @@ public abstract class BaseMob implements IFakeMob
 			case CHICKEN: mobHeight = 1.0; break;
 			case PLAYER: mobHeight = 1.8; break;
 			case SNOWMAN: mobHeight = 1.9; break;
+			case HOGLIN: mobHeight = 1.7; break;
 			default: mobHeight = NMSMob.getMobHeight(getEntityType());
 		}
 
@@ -92,7 +93,7 @@ public abstract class BaseMob implements IFakeMob
 	@Getter private final int       chunkX, chunkZ;
 
 	@Getter private final String displayName;
-	@Getter private final Deque<MobHologram> bobbingHolograms;
+	@Getter private MobHologram bobbingHologram;
 	
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
@@ -142,21 +143,16 @@ public abstract class BaseMob implements IFakeMob
 		// Name for the name hologram
 		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
-		this.bobbingHolograms = new ArrayDeque<>();
 		{
-			List<String> bobbingHologramContent = BUtil.translateColours(configurationSection.getStringList("options.bobbing-holograms"));
+			List<String> bobbingHologramContent = BUtil.translateColours(configurationSection.getStringList("options.bobbing-hologram"));
 			if(bobbingHologramContent != null)
 			{
-				Location hologramHeight = this.mobLocation.clone().add(0,  1.8 + mobHeight - 0.1, 0);
+				Location hologramHeight = this.mobLocation.clone().add(0, mobHeight - 1.8, 0);
 
-				int hologramId = 0;
-				for (String hologramContent : bobbingHologramContent)
-				{
-					MobHologram mobHologram = new MobHologram(hologramHeight = hologramHeight.add(0, 0.15, 0), hologramContent);
-					this.bobbingHolograms.add(mobHologram);
+				MobHologram mobHologram = new MobHologram(hologramHeight, bobbingHologramContent);
+				this.bobbingHologram = mobHologram;
 
-					ClientSideHandler.registerEntity("FakeMobs_Id-" + entityId + "-" + hologramId++, mobHologram);
-				}
+				ClientSideHandler.registerEntity("FakeMobs_Id-Hologram-" + entityId, mobHologram);
 			}
 		}
 		
@@ -288,11 +284,10 @@ public abstract class BaseMob implements IFakeMob
 			PacketUtil.sendDestroyPacket(player, entityId);
 		}
 
-		for (int hologramId = 0;hologramId < this.bobbingHolograms.size();hologramId++)
+		/*if(this.bobbingHologram != null)
 		{
-			ClientSideHandler.deregisterEntity("FakeMobs_Id-" + entityId + "-" + hologramId++);
-		}
-		this.bobbingHolograms.clear();
+			ClientSideHandler.deregisterEntity("FakeMobs_Id-Hologram-" + entityId);
+		}*/
 	}
 	
 	public void die()

@@ -5,12 +5,14 @@ import com.skytonia.SkyCore.clientside.movement.BobMovement;
 import com.skytonia.SkyCore.util.EntityTrio;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class PlayerMobHologram extends PlayerHoverText
 {
 
-	private final String content;
+	private final List<String> content;
 
-	public PlayerMobHologram(int entityId, Player player, EntityTrio initialLocation, String content)
+	public PlayerMobHologram(int entityId, Player player, EntityTrio initialLocation, List<String> content)
 	{
 		super(entityId, player, initialLocation);
 
@@ -22,6 +24,6 @@ public class PlayerMobHologram extends PlayerHoverText
 	@Override
 	public String getText(int tick)
 	{
-		return content;
+		return content.get((tick / 20) % content.size());
 	}
 }

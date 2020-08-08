@@ -7,13 +7,15 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class MobHologram extends HoverText
 {
 
 	@Getter
-	private final String content;
+	private final List<String> content;
 
-	public MobHologram(Location entityLocation, String content)
+	public MobHologram(Location entityLocation, List<String> content)
 	{
 		super(entityLocation, 30);
 

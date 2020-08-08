@@ -18,7 +18,8 @@ public class HoglinMob extends BaseMob
 	{
 		super.setMetadata(watcher);
 
-		watcher.setObject(16, true);
+		watcher.setObject(15, false); // Not Baby
+		watcher.setObject(16, true); // No Shiver
 	}
 
 }
