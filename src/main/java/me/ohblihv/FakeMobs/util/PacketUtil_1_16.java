@@ -2,15 +2,14 @@ package me.ohblihv.FakeMobs.util;
 
 import com.comphenix.packetwrapper.AbstractPacket;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
-import com.comphenix.packetwrapper.WrapperPlayServerEntityEquipment;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilMinecraftSessionService;
+import com.mojang.datafixers.util.Pair;
 import com.skytonia.SkyCore.SkyCore;
 import com.skytonia.SkyCore.util.BUtil;
 import com.skytonia.SkyCore.util.SupportedVersion;
@@ -22,29 +21,18 @@ import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer116;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_13_2;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
-import net.minecraft.server.v1_16_R1.DataWatcher;
-import net.minecraft.server.v1_16_R1.Entity;
-import net.minecraft.server.v1_16_R1.EntityHuman;
-import net.minecraft.server.v1_16_R1.EntityPlayer;
-import net.minecraft.server.v1_16_R1.EntityTypes;
-import net.minecraft.server.v1_16_R1.IRegistry;
-import net.minecraft.server.v1_16_R1.MathHelper;
-import net.minecraft.server.v1_16_R1.MinecraftServer;
-import net.minecraft.server.v1_16_R1.PacketPlayOutEntity;
-import net.minecraft.server.v1_16_R1.PacketPlayOutEntityHeadRotation;
-import net.minecraft.server.v1_16_R1.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_16_R1.PacketPlayOutNamedEntitySpawn;
-import net.minecraft.server.v1_16_R1.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_16_R1.PlayerConnection;
-import net.minecraft.server.v1_16_R1.PlayerInteractManager;
-import net.minecraft.server.v1_16_R1.WorldServer;
+import net.minecraft.server.v1_16_R1.*;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PacketUtil_1_16 implements IPacketUtil
 {
@@ -177,12 +165,10 @@ public class PacketUtil_1_16 implements IPacketUtil
 
 				teamPacket.sendPacket(player);
 
-				for(EnumWrappers.ItemSlot slot : EnumWrappers.ItemSlot.values())
+				final List<Pair<EnumItemSlot, net.minecraft.server.v1_16_R1.ItemStack>> equipmentList = new ArrayList<>();
+
+				for(EnumItemSlot slot : EnumItemSlot.values())
 				{
-					WrapperPlayServerEntityEquipment equipmentPacket = new WrapperPlayServerEntityEquipment();
-
-					equipmentPacket.setEntityID(npcMob.getEntityId());
-
 					ItemStack itemStack = null;
 					switch(slot)
 					{
@@ -199,13 +185,16 @@ public class PacketUtil_1_16 implements IPacketUtil
 						continue;
 					}
 
-					equipmentPacket.setItem(itemStack);
+					equipmentList.add(new Pair<>(slot, CraftItemStack.asNMSCopy(itemStack)));
+				}
 
+				if(!equipmentList.isEmpty())
+				{
 					try
 					{
-						equipmentPacket.setSlot(slot);
+						PacketPlayOutEntityEquipment equipmentPacket = new PacketPlayOutEntityEquipment(npcMob.getEntityId(), equipmentList);
 
-						equipmentPacket.sendPacket(player);
+						((CraftPlayer) player).getHandle().playerConnection.sendPacket(equipmentPacket);
 					}
 					catch(Exception e)
 					{
