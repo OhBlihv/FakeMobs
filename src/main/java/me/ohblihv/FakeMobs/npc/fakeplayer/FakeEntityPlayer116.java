@@ -1,10 +1,10 @@
 package me.ohblihv.FakeMobs.npc.fakeplayer;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.server.v1_16_R1.EntityPlayer;
-import net.minecraft.server.v1_16_R1.MinecraftServer;
-import net.minecraft.server.v1_16_R1.PlayerInteractManager;
-import net.minecraft.server.v1_16_R1.WorldServer;
+import net.minecraft.server.v1_16_R2.EntityPlayer;
+import net.minecraft.server.v1_16_R2.MinecraftServer;
+import net.minecraft.server.v1_16_R2.PlayerInteractManager;
+import net.minecraft.server.v1_16_R2.WorldServer;
 
 public class FakeEntityPlayer116 extends EntityPlayer implements FakeEntityPlayer
 {
@@ -13,7 +13,7 @@ public class FakeEntityPlayer116 extends EntityPlayer implements FakeEntityPlaye
 	{
 		super(srv, world, game, interact);
 
-		this.datawatcher.set(bq, (byte) 0xFF); //All Skin Parts Enabled
+		this.datawatcher.set(bj, (byte) 0xFF); //All Skin Parts Enabled
 	}
 
 	@Override

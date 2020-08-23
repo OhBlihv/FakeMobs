@@ -21,12 +21,12 @@ import me.ohblihv.FakeMobs.npc.fakeplayer.FakeEntityPlayer116;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
 import me.ohblihv.FakeMobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_13_2;
 import me.ohblihv.FakeMobs.util.skins.SkinFetcher;
-import net.minecraft.server.v1_16_R1.*;
+import net.minecraft.server.v1_16_R2.*;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -165,7 +165,7 @@ public class PacketUtil_1_16 implements IPacketUtil
 
 				teamPacket.sendPacket(player);
 
-				final List<Pair<EnumItemSlot, net.minecraft.server.v1_16_R1.ItemStack>> equipmentList = new ArrayList<>();
+				final List<Pair<EnumItemSlot, net.minecraft.server.v1_16_R2.ItemStack>> equipmentList = new ArrayList<>();
 
 				for(EnumItemSlot slot : EnumItemSlot.values())
 				{

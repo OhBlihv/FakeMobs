@@ -28,10 +28,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_16_R1</artifactId>
-			<version>1.16R-0.1-SNAPSHOT</version>
+			<artifactId>Spigot_1_16_R2</artifactId>
+			<version>1.16.2-0.1-SNAPSHOT</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/spigot-1.16.1.jar</systemPath>
+			<systemPath>${project.basedir}/../../lib/paper-1.16.2.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
