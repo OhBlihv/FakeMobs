@@ -103,7 +103,7 @@ public abstract class BaseMob implements IFakeMob
 	{
 		try
 		{
-			final String nmsPackage = "net.minecraft.server.v1_" + SkyCore.getCurrentVersion().getVersionNum() + "_R1.";
+			final String nmsPackage = "net.minecraft.server.v1_" + BUtil.getNMSVersion() + ".";
 
 			Object entityRegistry = Class.forName(nmsPackage + "IRegistry").getDeclaredField("ENTITY_TYPE").get(null);
 			// Citizens support
