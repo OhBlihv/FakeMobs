@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<groupId>me.ohblihv</groupId>
+	<groupId>net.auscraft</groupId>
 	<artifactId>FakeMobs</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
@@ -26,6 +26,13 @@
 	</repositories>
 	
 	<dependencies>
+		<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>Spigot_1_16_R3</artifactId>
+			<version>1.16.4-0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/dev-paper-1.16.4.jar</systemPath>
+		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>Spigot_1_16_R2</artifactId>
@@ -63,10 +70,11 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.skytonia</groupId>
+			<groupId>net.auscraft</groupId>
 			<artifactId>SkyCore</artifactId>
 			<version>1.0</version>
-			<scope>provided</scope>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/../../lib/SkyCore-1.0.1.jar</systemPath>
 			<optional>true</optional>
 		</dependency>
 		
@@ -82,7 +90,7 @@
 		<dependency>
 			<groupId>us.myles</groupId>
 			<artifactId>ViaVersion</artifactId>
-			<version>1.03</version>
+			<version>3.2.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/../../lib/ViaVersion.jar</systemPath>
 		</dependency>
