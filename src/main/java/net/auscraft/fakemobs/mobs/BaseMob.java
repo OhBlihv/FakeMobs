@@ -143,6 +143,7 @@ public abstract class BaseMob implements IFakeMob
 		// Name for the name hologram
 		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
+		BUtil.log("Display name: " + this.displayName);
 		{
 			List<String> bobbingHologramContent = BUtil.translateColours(configurationSection.getStringList("options.bobbing-hologram"));
 			if(bobbingHologramContent != null)
