@@ -1,22 +1,13 @@
 package net.auscraft.fakemobs.mobs;
 
-import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
 import com.comphenix.packetwrapper.WrapperPlayServerEntityHeadRotation;
-import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
-import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntityLiving;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import net.auscraft.skycore.SkyCore;
-import net.auscraft.skycore.clientside.ClientSideHandler;
-import net.auscraft.skycore.util.BUtil;
-import net.auscraft.skycore.util.LocationUtil;
-import net.auscraft.skycore.util.RunnableShorthand;
-import net.auscraft.skycore.util.SupportedVersion;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.auscraft.fakemobs.FakeMobs;
+import net.auscraft.fakemobs.hologram.BobbingMobHologram;
 import net.auscraft.fakemobs.hologram.MobHologram;
 import net.auscraft.fakemobs.management.MobManager;
 import net.auscraft.fakemobs.mobs.actions.ActionFactory;
@@ -24,6 +15,10 @@ import net.auscraft.fakemobs.mobs.actions.BaseAction;
 import net.auscraft.fakemobs.mobs.nms.NMSMob;
 import net.auscraft.fakemobs.util.PacketUtil;
 import net.auscraft.fakemobs.util.lib.MathHelper;
+import net.auscraft.skycore.clientside.ClientSideHandler;
+import net.auscraft.skycore.util.BUtil;
+import net.auscraft.skycore.util.LocationUtil;
+import net.auscraft.skycore.util.RunnableShorthand;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -32,16 +27,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by Chris Brown (OhBlihv) on 19/05/2016.
@@ -57,7 +43,7 @@ public abstract class BaseMob implements IFakeMob
 
 	@Getter
 	@Setter(AccessLevel.PROTECTED)
-	private int entityId, nameEntityId;
+	private int entityId;
 	
 	@Getter
 	private EntityType entityType = EntityType.VILLAGER;
@@ -93,42 +79,10 @@ public abstract class BaseMob implements IFakeMob
 	@Getter private final int       chunkX, chunkZ;
 
 	@Getter private final String displayName;
-	@Getter private MobHologram bobbingHologram;
+	@Getter private BobbingMobHologram bobbingHologram;
 	
 	private final Deque<BaseAction> attackActions = new ArrayDeque<>(),
 									interactActions = new ArrayDeque<>();
-
-	private static int armourStandId;
-	static
-	{
-		try
-		{
-			final String nmsPackage = "net.minecraft.server.v1_" + BUtil.getNMSVersion() + ".";
-
-			Object entityRegistry = Class.forName(nmsPackage + "IRegistry").getDeclaredField("ENTITY_TYPE").get(null);
-			// Citizens support
-			if(entityRegistry.getClass().getSimpleName().equals("CustomEntityRegistry"))
-			{
-				Class<?> entityTypesClass =  Class.forName(nmsPackage + "EntityTypes");
-				Field armourStandEntityTypeField = entityTypesClass.getDeclaredField("ARMOR_STAND");
-
-				armourStandId = (int) entityRegistry.getClass().getDeclaredMethod("a", Object.class).invoke(entityRegistry, armourStandEntityTypeField.get(null));
-			}
-			else
-			{
-				Class<?> entityTypesClass =  Class.forName(nmsPackage + "EntityTypes");
-				Field armourStandEntityTypeField = entityTypesClass.getDeclaredField("ARMOR_STAND");
-
-				armourStandId = (int) entityRegistry.getClass().getDeclaredMethod("a", Object.class).invoke(entityRegistry, armourStandEntityTypeField.get(null));
-			}
-
-			BUtil.log("Loaded ArmorStand ID as " + armourStandId);
-		}
-		catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
-		{
-			e.printStackTrace();
-		}
-	}
 
 	public BaseMob(int entityId, ConfigurationSection configurationSection)
 	{
@@ -141,25 +95,35 @@ public abstract class BaseMob implements IFakeMob
 		this.entityId = entityId;
 
 		// Name for the name hologram
-		this.nameEntityId = ClientSideHandler.getUniqueEntityId();
 		this.displayName = BUtil.translateColours(configurationSection.getString("options.displayname", null));
 		BUtil.log("Display name: " + this.displayName);
 		{
 			List<String> bobbingHologramContent = BUtil.translateColours(configurationSection.getStringList("options.bobbing-hologram"));
 			if(bobbingHologramContent != null)
 			{
-				Location hologramHeight = this.mobLocation.clone().add(0, mobHeight - 1.8, 0);
+				double heightDelta = -1.8;
+				if (displayName != null)
+				{
+					heightDelta = -1.4;
+				}
 
-				MobHologram mobHologram = new MobHologram(hologramHeight, bobbingHologramContent);
+				Location hologramHeight = this.mobLocation.clone().add(0, mobHeight + heightDelta, 0);
+
+				BobbingMobHologram mobHologram = new BobbingMobHologram(hologramHeight, bobbingHologramContent);
 				this.bobbingHologram = mobHologram;
 
 				ClientSideHandler.registerEntity("FakeMobs_Id-Hologram-" + entityId, mobHologram);
+			}
+
+			if (displayName != null)
+			{
+				ClientSideHandler.registerEntity("FakeMobs_Id-Name-" + entityId,
+					new MobHologram(this.mobLocation.clone().add(0, mobHeight - 1.8, 0), Collections.singletonList(displayName)));
 			}
 		}
 		
 		//Trigger the DataWatcher cache for this entity type
 		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), entityType);
-		PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
 		
 		loadActions(configurationSection.getConfigurationSection("actions.LEFT_CLICK"), attackActions);
 		loadActions(configurationSection.getConfigurationSection("actions.RIGHT_CLICK"), interactActions);
@@ -167,7 +131,7 @@ public abstract class BaseMob implements IFakeMob
 
 	public List<Integer> getAllDelegateMobsIds()
 	{
-		return Arrays.asList(nameEntityId);
+		return Collections.emptyList();
 	}
 	
 	private void loadActions(ConfigurationSection configurationSection, Deque<BaseAction> actionDeque)
@@ -458,58 +422,12 @@ public abstract class BaseMob implements IFakeMob
 
 	public void onSpawn(Player player)
 	{
-		if(displayName != null && !displayName.isEmpty())
-		{
-			WrapperPlayServerSpawnEntityLiving spawnPacket = new WrapperPlayServerSpawnEntityLiving();
 
-			//Set entity type id
-			spawnPacket.getHandle().getIntegers().write(1, armourStandId);
-
-			spawnPacket.setEntityID(nameEntityId);
-			spawnPacket.setUniqueId(UUID.randomUUID());
-			spawnPacket.setX(mobLocation.getX());
-			spawnPacket.setY(mobLocation.getY() - 1.8 + mobHeight - 0.1);
-			spawnPacket.setZ(mobLocation.getZ());
-
-			WrappedDataWatcher watcher = PacketUtil.getDefaultWatcher(mobLocation.getWorld(), EntityType.ARMOR_STAND);
-
-			// OptChat from 1.13+
-			Optional<?> opt = Optional.of(WrappedChatComponent.fromChatMessage(displayName)[0].getHandle());
-			watcher.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.getChatComponentSerializer(true)), opt);
-
-			// Invisible
-			watcher.setObject(0, (byte) 0x20);
-			watcher.setObject(3, true);
-
-			// 1.15 does not contain the metadata in the spawn packet.
-			WrapperPlayServerEntityMetadata metadataPacket = null;
-			if(SkyCore.getCurrentVersion().isAtLeast(SupportedVersion.ONE_FIFTEEN))
-			{
-				metadataPacket = new WrapperPlayServerEntityMetadata();
-				metadataPacket.setMetadata(watcher.getWatchableObjects());
-				metadataPacket.setEntityID(nameEntityId);
-			}
-			else
-			{
-				spawnPacket.setMetadata(watcher);
-			}
-
-			spawnPacket.sendPacket(player);
-
-			if(metadataPacket != null)
-			{
-				metadataPacket.sendPacket(player);
-			}
-		}
 	}
 
 	public void onDespawn(Player player)
 	{
-		WrapperPlayServerEntityDestroy destroyPacket = new WrapperPlayServerEntityDestroy();
 
-		destroyPacket.setEntityIds(new int[] {nameEntityId});
-
-		destroyPacket.sendPacket(player);
 	}
 
 }
