@@ -98,7 +98,7 @@ public class FakeMobs extends JavaPlugin implements Listener
 		{
 			event.setCancelled(true);
 
-			ItemStack itemInHand = player.getItemInHand();
+			ItemStack itemInHand = player.getInventory().getItemInMainHand();
 			if (itemInHand == null || itemInHand.getType() == Material.AIR)
 			{
 				player.sendMessage("§c§l(!) §cYou're not holding anything!");
@@ -112,11 +112,11 @@ public class FakeMobs extends JavaPlugin implements Listener
 			}
 
 			SkullMeta skullMeta = (SkullMeta) itemInHand.getItemMeta();
-			GameProfile profile = null;
+			GameProfile profile;
 			{
 				try
 				{
-					Field field = Class.forName("org.bukkit.craftbukkit.v1_16_R1.inventory.CraftMetaSkull").getField("profile");
+					Field field = Class.forName("org.bukkit.craftbukkit.v1_16_R3.inventory.CraftMetaSkull").getDeclaredField("profile");
 					field.setAccessible(true);
 
 					profile = (GameProfile) field.get(skullMeta);
