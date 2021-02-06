@@ -1,7 +1,7 @@
 package net.auscraft.fakemobs.mobs.actions;
 
-import net.auscraft.skycore.util.BUtil;
 import lombok.RequiredArgsConstructor;
+import net.auscraft.skycore.util.BUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -46,10 +46,10 @@ public class CommandAction extends BaseAction
 			{
 				commandExecutor = CommandExecutor.valueOf(executorString);
 			}
-			catch(IllegalArgumentException e)
+			catch(IllegalArgumentException | NullPointerException e)
 			{
 				commandExecutor = CommandExecutor.CONSOLE;
-				BUtil.logInfo("Could not determine executor at " + commandSection.getCurrentPath() + ". Defaulting to CONSOLE.");
+				BUtil.log("Could not determine executor at " + commandSection.getCurrentPath() + ". Defaulting to CONSOLE.");
 			}
 			
 			commands.add(new CommandObject(command, commandExecutor));

@@ -123,6 +123,7 @@ public class MobManager
 		catch(Exception e)
 		{
 			BUtil.log("Unable to load mob - invalid type");
+			BUtil.log("Failed at " + configurationSection.getCurrentPath());
 			e.printStackTrace();
 			return;
 		}
