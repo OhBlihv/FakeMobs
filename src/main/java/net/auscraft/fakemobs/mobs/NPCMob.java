@@ -8,7 +8,7 @@ import net.auscraft.fakemobs.npc.NPCProfile;
 import net.auscraft.fakemobs.npc.fakeplayer.FakeEntityPlayer;
 import net.auscraft.fakemobs.util.PacketUtil;
 import net.auscraft.fakemobs.util.skins.SkinHandler;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

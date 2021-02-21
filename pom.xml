@@ -29,44 +29,9 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>Spigot_1_16_R3</artifactId>
-			<version>1.16.4-0.1-SNAPSHOT</version>
+			<version>1.16.5-0.1-SNAPSHOT</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/dev-paper-1.16.4.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_16_R2</artifactId>
-			<version>1.16.2-0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/paper-1.16.2.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_15_R1</artifactId>
-			<version>1.15R-0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/paper-1.15.1.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_14_R1</artifactId>
-			<version>1.14-R0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/spigot-1.14.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_13_R2</artifactId>
-			<version>1.13-R0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/paper-1.13.2.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_13</artifactId>
-			<version>1.13-R0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/spigot-1.13.jar</systemPath>
+			<systemPath>${project.basedir}/../../lib/paper-1.16.5.jar</systemPath>
 		</dependency>
 
 		<dependency>
@@ -112,7 +77,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.10</version>
+			<version>1.18.18</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>

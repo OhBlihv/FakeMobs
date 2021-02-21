@@ -48,10 +48,6 @@ public class PacketUtil
 	{
 		switch(BUtil.getNMSVersion())
 		{
-			case "v1_13_R1": packetUtilImpl = new PacketUtil_1_13_R1(); break;
-			case "v1_13_R2": packetUtilImpl = new PacketUtil_1_13_R2(); break;
-			case "v1_14_R1": packetUtilImpl = new PacketUtil_1_14(); break;
-			case "v1_15_R1": packetUtilImpl = new PacketUtil_1_15(); break;
 			case "v1_16_R3": packetUtilImpl = new PacketUtil_1_16_R3(); break;
 			default:
 				throw new IllegalArgumentException("Unsupported NMS Version " + BUtil.getNMSVersion());
