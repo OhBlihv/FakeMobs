@@ -12,7 +12,7 @@ public class NMSMob
 	{
 		switch(BUtil.getNMSVersion())
 		{
-			case "v1_16_R3": nmsMobHandler = new NMSMob_1_16(); break;
+			case "v1_17_R1": nmsMobHandler = new NMSMob_1_17(); break;
 			default:
 				throw new IllegalArgumentException("Unsupported NMS Version " + BUtil.getNMSVersion());
 		}

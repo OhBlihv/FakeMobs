@@ -4,7 +4,7 @@
 	
 	<groupId>net.auscraft</groupId>
 	<artifactId>FakeMobs</artifactId>
-	<version>1.1</version>
+	<version>1.2</version>
 	<packaging>jar</packaging>
 	
 	<name>${project.artifactId}</name>
@@ -16,8 +16,8 @@
 	
 	<repositories>
 		<repository>
-			<id>md_5-snapshots</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+			<id>papermc</id>
+			<url>https://papermc.io/repo/repository/maven-public/</url>
 		</repository>
 		<repository>
 			<id>dmulloy2-repo</id>
@@ -27,11 +27,17 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>Spigot_1_16_R3</artifactId>
-			<version>1.16.5-0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/../../lib/paper-1.16.5.jar</systemPath>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
+			<version>1.17-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper</artifactId>
+			<version>1.17-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -77,7 +83,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.18</version>
+			<version>1.18.20</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
@@ -105,10 +111,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
+				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>16</source>
+					<target>16</target>
 				</configuration>
 			</plugin>
 			<plugin>

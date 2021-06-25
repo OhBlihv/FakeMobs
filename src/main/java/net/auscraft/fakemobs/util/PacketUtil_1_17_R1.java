@@ -15,18 +15,30 @@ import net.auscraft.fakemobs.mobs.BaseMob;
 import net.auscraft.fakemobs.mobs.NPCMob;
 import net.auscraft.fakemobs.npc.fakeplayer.FakeEntityPlayer;
 import net.auscraft.fakemobs.npc.fakeplayer.FakeEntityPlayer116;
+import net.auscraft.fakemobs.util.lib.MathHelper;
 import net.auscraft.fakemobs.util.packets.WrapperPlayServerScoreboardTeam_1_13;
 import net.auscraft.fakemobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_13_2;
 import net.auscraft.fakemobs.util.skins.SkinFetcher;
 import net.auscraft.skycore.SkyCore;
 import net.auscraft.skycore.util.BUtil;
 import net.auscraft.skycore.util.SupportedVersion;
-import net.minecraft.server.v1_16_R3.*;
+import net.minecraft.core.IRegistry;
+import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.syncher.DataWatcher;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.level.PlayerInteractManager;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.network.PlayerConnection;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EnumItemSlot;
+import net.minecraft.world.entity.player.EntityHuman;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -34,7 +46,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PacketUtil_1_16_R3 implements IPacketUtil
+public class PacketUtil_1_17_R1 implements IPacketUtil
 {
 
 	@Override
@@ -44,7 +56,7 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 
 		return new FakeEntityPlayer116(
 			MinecraftServer.getServer(), worldServer,
-			gameProfile, new PlayerInteractManager(worldServer)
+			gameProfile, new PlayerInteractManager(EntityPlayer)
 		);
 	}
 
@@ -68,7 +80,7 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 		}
 
 		//Set entity type id
-		spawnPacket.getHandle().getIntegers().write(1, IRegistry.ENTITY_TYPE.a(entityTypes));
+		spawnPacket.getHandle().getIntegers().write(1, IRegistry.Y.a(entityTypes));
 		//BUtil.log("Spawning as ID=" + IRegistry.ENTITY_TYPE.a(entityTypes));
 
 		Location spawnLocation = baseMob.getMobLocation();
@@ -122,10 +134,10 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 	@Override
 	public void sendPlayerSpawnPackets(Player player, NPCMob npcMob)
 	{
-		PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().playerConnection;
+		PlayerConnection playerConnection = ((CraftPlayer) player).getHandle().b;
 
 		PacketPlayOutPlayerInfo infoPacket = new PacketPlayOutPlayerInfo(
-			PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, (EntityPlayer) npcMob.getFakeEntityPlayer());
+			PacketPlayOutPlayerInfo.EnumPlayerInfoAction.a, (EntityPlayer) npcMob.getFakeEntityPlayer());
 
 		playerConnection.sendPacket(infoPacket);
 
@@ -165,19 +177,19 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 
 				teamPacket.sendPacket(player);
 
-				final List<Pair<EnumItemSlot, net.minecraft.server.v1_16_R3.ItemStack>> equipmentList = new ArrayList<>();
+				final List<Pair<EnumItemSlot, net.minecraft.world.item.ItemStack>> equipmentList = new ArrayList<>();
 
 				for(EnumItemSlot slot : EnumItemSlot.values())
 				{
 					ItemStack itemStack = null;
 					switch(slot)
 					{
-						case HEAD: itemStack = npcMob.getHeadItem(); break;
-						case CHEST: itemStack = npcMob.getBodyItem(); break;
-						case LEGS: itemStack = npcMob.getLegsItem(); break;
-						case FEET: itemStack = npcMob.getFeetItem(); break;
-						case MAINHAND: itemStack = npcMob.getMainHandItem(); break;
-						case OFFHAND: itemStack = npcMob.getOffHandItem(); break;
+						case f: itemStack = npcMob.getHeadItem(); break; // HEAD
+						case e: itemStack = npcMob.getBodyItem(); break; // CHEST
+						case d: itemStack = npcMob.getLegsItem(); break; // LEGS
+						case c: itemStack = npcMob.getFeetItem(); break; // FEET
+						case a: itemStack = npcMob.getMainHandItem(); break; // MAINHAND
+						case b: itemStack = npcMob.getOffHandItem(); break; // OFFHAND
 					}
 
 					if(itemStack == null)
@@ -194,7 +206,7 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 					{
 						PacketPlayOutEntityEquipment equipmentPacket = new PacketPlayOutEntityEquipment(npcMob.getEntityId(), equipmentList);
 
-						((CraftPlayer) player).getHandle().playerConnection.sendPacket(equipmentPacket);
+						((CraftPlayer) player).getHandle().b.sendPacket(equipmentPacket);
 					}
 					catch(Exception e)
 					{
@@ -205,7 +217,7 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 				if(++tick > 6)
 				{
 					playerConnection.sendPacket(new PacketPlayOutPlayerInfo(
-						PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, (EntityPlayer) npcMob.getFakeEntityPlayer()));
+						PacketPlayOutPlayerInfo.EnumPlayerInfoAction.e, (EntityPlayer) npcMob.getFakeEntityPlayer()));
 
 					this.cancel();
 				}
@@ -254,7 +266,7 @@ public class PacketUtil_1_16_R3 implements IPacketUtil
 			(byte) MathHelper.d(pitch * 256.0F / 360.0F), true
 		);
 
-		((CraftPlayer) player).getHandle().playerConnection.sendPacket(lookPacket);
+		((CraftPlayer) player).getHandle().b.sendPacket(lookPacket);
 	}
 
 	@Override

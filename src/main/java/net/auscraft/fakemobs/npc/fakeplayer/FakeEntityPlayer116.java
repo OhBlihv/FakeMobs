@@ -1,10 +1,10 @@
 package net.auscraft.fakemobs.npc.fakeplayer;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.server.v1_16_R3.EntityPlayer;
-import net.minecraft.server.v1_16_R3.MinecraftServer;
-import net.minecraft.server.v1_16_R3.PlayerInteractManager;
-import net.minecraft.server.v1_16_R3.WorldServer;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.level.PlayerInteractManager;
+import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.MinecraftServer;
 
 public class FakeEntityPlayer116 extends EntityPlayer implements FakeEntityPlayer
 {
