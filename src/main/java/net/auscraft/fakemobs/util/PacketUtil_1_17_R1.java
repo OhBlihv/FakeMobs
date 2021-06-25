@@ -27,7 +27,6 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.DataWatcher;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.server.level.PlayerInteractManager;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.server.network.PlayerConnection;
 import net.minecraft.world.entity.Entity;
@@ -54,10 +53,7 @@ public class PacketUtil_1_17_R1 implements IPacketUtil
 	{
 		WorldServer worldServer = ((CraftWorld) world).getHandle();
 
-		return new FakeEntityPlayer116(
-			MinecraftServer.getServer(), worldServer,
-			gameProfile, new PlayerInteractManager(EntityPlayer)
-		);
+		return new FakeEntityPlayer116(MinecraftServer.getServer(), worldServer, gameProfile);
 	}
 
 	public void sendSpawnPacket(Player player, BaseMob baseMob)
@@ -80,7 +76,8 @@ public class PacketUtil_1_17_R1 implements IPacketUtil
 		}
 
 		//Set entity type id
-		spawnPacket.getHandle().getIntegers().write(1, IRegistry.Y.a(entityTypes));
+		//spawnPacket.getHandle().getIntegers().write(1, IRegistry.Y.a(entityTypes));
+		spawnPacket.getHandle().getIntegers().write(1, IRegistry.Y.getId(entityTypes));
 		//BUtil.log("Spawning as ID=" + IRegistry.ENTITY_TYPE.a(entityTypes));
 
 		Location spawnLocation = baseMob.getMobLocation();

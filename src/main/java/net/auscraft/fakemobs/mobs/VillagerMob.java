@@ -1,8 +1,8 @@
 package net.auscraft.fakemobs.mobs;
 
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import net.minecraft.server.v1_16_R3.VillagerProfession;
-import net.minecraft.server.v1_16_R3.VillagerType;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
