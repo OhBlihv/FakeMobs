@@ -2,15 +2,16 @@ package net.auscraft.fakemobs.util.packets;
 
 import com.comphenix.packetwrapper.AbstractPacket;
 import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.InternalStructure;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.IntEnum;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import net.auscraft.skycore.util.BUtil;
 import org.bukkit.ChatColor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class WrapperPlayServerScoreboardTeam_1_17 extends AbstractPacket
 {
@@ -21,18 +22,6 @@ public class WrapperPlayServerScoreboardTeam_1_17 extends AbstractPacket
 	{
 		super(new PacketContainer(TYPE), TYPE);
 		handle.getModifier().writeDefaults();
-
-//		int fieldCount = handle.getModifier().size();
-//		BUtil.log("Team fields: " + fieldCount);
-//		for (int fieldNum = 0;fieldNum < fieldCount;fieldNum++)
-//		{
-//			BUtil.log("Field (" + handle.getModifier().getField(fieldNum).getName() + ") -> " + handle.getModifier().getField(fieldNum).getType() + "<" + handle.getModifier().getField(fieldNum).getAnnotatedType() + ">");
-//		}
-
-		BUtil.log(handle.getOptionalStructures().getFields().stream().map(f ->
-		{
-			return f.getName() + "->" + f.getAnnotatedType();
-		}).toList().toString());
 	}
 
 	public WrapperPlayServerScoreboardTeam_1_17(PacketContainer packet)
@@ -152,7 +141,10 @@ public class WrapperPlayServerScoreboardTeam_1_17 extends AbstractPacket
 	 */
 	public void setNameTagVisibility(String value)
 	{
-		//handle.getOptionalStructures().read(0).get().getStrings().write(0, value);
+		InternalStructure teamInfoStruct = handle.getOptionalStructures().read(0).get();
+		teamInfoStruct.getStrings().write(0, value);
+
+		handle.getOptionalStructures().write(0, Optional.of(teamInfoStruct));
 	}
 
 	/**
