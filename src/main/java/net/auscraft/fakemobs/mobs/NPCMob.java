@@ -1,14 +1,14 @@
 package net.auscraft.fakemobs.mobs;
 
 import com.mojang.authlib.properties.Property;
-import net.auscraft.skycore.items.construction.ItemContainerConstructor;
-import net.auscraft.skycore.util.BUtil;
 import lombok.Getter;
 import net.auscraft.fakemobs.npc.NPCProfile;
 import net.auscraft.fakemobs.npc.fakeplayer.FakeEntityPlayer;
 import net.auscraft.fakemobs.util.PacketUtil;
 import net.auscraft.fakemobs.util.skins.SkinHandler;
-import org.apache.commons.lang.RandomStringUtils;
+import net.auscraft.skycore.items.construction.ItemContainerConstructor;
+import net.auscraft.skycore.util.BUtil;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

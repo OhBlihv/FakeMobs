@@ -6,23 +6,36 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.IntEnum;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import net.auscraft.skycore.util.BUtil;
 import org.bukkit.ChatColor;
 
 import java.util.Collection;
 import java.util.List;
 
-public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
+public class WrapperPlayServerScoreboardTeam_1_17 extends AbstractPacket
 {
 
 	public static final PacketType TYPE = PacketType.Play.Server.SCOREBOARD_TEAM;
 
-	public WrapperPlayServerScoreboardTeam_1_13()
+	public WrapperPlayServerScoreboardTeam_1_17()
 	{
 		super(new PacketContainer(TYPE), TYPE);
 		handle.getModifier().writeDefaults();
+
+//		int fieldCount = handle.getModifier().size();
+//		BUtil.log("Team fields: " + fieldCount);
+//		for (int fieldNum = 0;fieldNum < fieldCount;fieldNum++)
+//		{
+//			BUtil.log("Field (" + handle.getModifier().getField(fieldNum).getName() + ") -> " + handle.getModifier().getField(fieldNum).getType() + "<" + handle.getModifier().getField(fieldNum).getAnnotatedType() + ">");
+//		}
+
+		BUtil.log(handle.getOptionalStructures().getFields().stream().map(f ->
+		{
+			return f.getName() + "->" + f.getAnnotatedType();
+		}).toList().toString());
 	}
 
-	public WrapperPlayServerScoreboardTeam_1_13(PacketContainer packet)
+	public WrapperPlayServerScoreboardTeam_1_17(PacketContainer packet)
 	{
 		super(packet, TYPE);
 	}
@@ -91,7 +104,8 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public void setPrefix(WrappedChatComponent value)
 	{
-		handle.getChatComponents().write(1, value);
+		handle.getOptionalStructures().read(0).get().getChatComponents().write(1, value);
+		//handle.getChatComponents().write(1, value);
 	}
 
 	/**
@@ -114,7 +128,8 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public void setSuffix(WrappedChatComponent value)
 	{
-		handle.getChatComponents().write(2, value);
+		handle.getOptionalStructures().read(0).get().getChatComponents().write(2, value);
+		//handle.getChatComponents().write(2, value);
 	}
 
 	/**
@@ -127,7 +142,7 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public String getNameTagVisibility()
 	{
-		return handle.getStrings().read(1);
+		return handle.getOptionalStructures().read(0).get().getStrings().read(0);
 	}
 
 	/**
@@ -137,7 +152,7 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public void setNameTagVisibility(String value)
 	{
-		handle.getStrings().write(1, value);
+		//handle.getOptionalStructures().read(0).get().getStrings().write(0, value);
 	}
 
 	/**
@@ -170,7 +185,7 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public String getCollisionRule()
 	{
-		return handle.getStrings().read(2);
+		return handle.getOptionalStructures().read(0).get().getStrings().read(1);
 	}
 
 	/**
@@ -180,7 +195,7 @@ public class WrapperPlayServerScoreboardTeam_1_13 extends AbstractPacket
 	 */
 	public void setCollisionRule(String value)
 	{
-		handle.getStrings().write(2, value);
+		//handle.getOptionalStructures().read(0).get().getStrings().write(1, value);
 	}
 
 	/**
