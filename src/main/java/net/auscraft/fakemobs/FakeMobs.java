@@ -116,7 +116,7 @@ public class FakeMobs extends JavaPlugin implements Listener
 			{
 				try
 				{
-					Field field = Class.forName("org.bukkit.craftbukkit.v1_16_R3.inventory.CraftMetaSkull").getDeclaredField("profile");
+					Field field = Class.forName("org.bukkit.craftbukkit.v1_17_R1.inventory.CraftMetaSkull").getDeclaredField("profile");
 					field.setAccessible(true);
 
 					profile = (GameProfile) field.get(skullMeta);
