@@ -8,7 +8,6 @@ import net.auscraft.fakemobs.util.PacketUtil;
 import net.auscraft.fakemobs.util.skins.SkinHandler;
 import net.auscraft.skycore.items.construction.ItemContainerConstructor;
 import net.auscraft.skycore.util.BUtil;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -52,7 +51,8 @@ public class NPCMob extends BaseMob
 	{
 		super(entityId, configurationSection);
 
-		npcName = RandomStringUtils.randomAlphanumeric(10);
+		//npcName = RandomStringUtils.randomAlphanumeric(10);
+		npcName = getDisplayName();
 
 		profile = new NPCProfile(npcName);
 

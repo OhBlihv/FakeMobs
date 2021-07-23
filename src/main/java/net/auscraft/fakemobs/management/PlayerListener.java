@@ -56,7 +56,7 @@ public class PlayerListener implements Listener
 			RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
 			{
 				PacketUtil.getInitialNPCTeam().sendPacket(player);
-			}).runTaskASync(delay / 2);
+			}).runTaskLater(delay / 2);
 		}
 	}
 

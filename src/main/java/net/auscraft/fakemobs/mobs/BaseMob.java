@@ -115,7 +115,7 @@ public abstract class BaseMob implements IFakeMob
 				ClientSideHandler.registerEntity("FakeMobs_Id-Hologram-" + entityId, mobHologram);
 			}
 
-			if (displayName != null)
+			if (displayName != null && !(this instanceof NPCMob))
 			{
 				ClientSideHandler.registerEntity("FakeMobs_Id-Name-" + entityId,
 					new MobHologram(this.mobLocation.clone().add(0, mobHeight - 1.8, 0), Collections.singletonList(displayName)));

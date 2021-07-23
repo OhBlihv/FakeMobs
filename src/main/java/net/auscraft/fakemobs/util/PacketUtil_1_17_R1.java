@@ -19,6 +19,7 @@ import net.auscraft.fakemobs.util.packets.WrapperPlayServerScoreboardTeam_1_17;
 import net.auscraft.fakemobs.util.packets.WrapperPlayServerSpawnEntityLiving_1_17;
 import net.auscraft.fakemobs.util.skins.SkinFetcher;
 import net.auscraft.skycore.util.BUtil;
+import net.auscraft.skycore.util.RunnableShorthand;
 import net.minecraft.core.IRegistry;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.DataWatcher;
@@ -30,13 +31,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EnumItemSlot;
 import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -158,13 +159,19 @@ public class PacketUtil_1_17_R1 implements IPacketUtil
 				WrapperPlayServerScoreboardTeam_1_17 teamPacket = (WrapperPlayServerScoreboardTeam_1_17) getNPCTeam();
 				teamPacket.getPlayers().add(npcMob.getProfile().getName());
 
-				teamPacket.sendPacket(player);
+				for (int count = 1; count < 5; count++)
+				{
+					RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
+					{
+						teamPacket.sendPacket(player);
+					}).runTaskLater(10 * count);
+				}
 
-				final List<Pair<EnumItemSlot, net.minecraft.world.item.ItemStack>> equipmentList = new ArrayList<>();
+				final List<Pair<EnumItemSlot, ItemStack>> equipmentList = new ArrayList<>();
 
 				for(EnumItemSlot slot : EnumItemSlot.values())
 				{
-					ItemStack itemStack = null;
+					org.bukkit.inventory.ItemStack itemStack = null;
 					switch(slot)
 					{
 						case f: itemStack = npcMob.getHeadItem(); break; // HEAD
@@ -229,10 +236,10 @@ public class PacketUtil_1_17_R1 implements IPacketUtil
 	public AbstractPacket getInitialNPCTeam()
 	{
 		WrapperPlayServerScoreboardTeam_1_17 teamPacket = new WrapperPlayServerScoreboardTeam_1_17();
-		teamPacket.setNameTagVisibility("never");
+		//teamPacket.setNameTagVisibility("never");
 		teamPacket.setName(FakeMobs.NPC_TEAM);
 		teamPacket.setMode(0);
-		teamPacket.setPrefix(WrappedChatComponent.fromText("§8[NPC] "));
+		teamPacket.setPrefix(WrappedChatComponent.fromText("§8§o"));
 
 		return teamPacket;
 	}
