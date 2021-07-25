@@ -82,7 +82,7 @@ public class MobManager
 		return mobMap.containsKey(entityId);
 	}
 
-	//Returns if at least one boss is active
+	//Returns if at least one FakeMob is active
 	public static boolean isMobActive()
 	{
 		return !mobMap.isEmpty();

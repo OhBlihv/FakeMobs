@@ -139,11 +139,13 @@ public abstract class BaseMob implements IFakeMob
 		//This click type is not defined
 		if(configurationSection == null)
 		{
+			BUtil.log("ConfigurationSection null");
 			return;
 		}
-		
+
 		for(String actionName : configurationSection.getKeys(false))
 		{
+			BUtil.log("Found actionName " + actionName + " under " + configurationSection.getCurrentPath());
 			BaseAction action;
 			try
 			{

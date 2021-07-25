@@ -9,11 +9,12 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
 import net.auscraft.fakemobs.FakeMobs;
 import net.auscraft.fakemobs.mobs.IFakeMob;
 import net.auscraft.skycore.util.BUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
+import net.auscraft.skycore.util.RunnableShorthand;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -29,16 +30,12 @@ import java.util.List;
 public class EntityListener implements Listener
 {
 
-	//private static AsyncListenerHandler bossListener;
-	
-	private static ProtocolManager protocolManager;
-	
 	//Hey, Welcome to the dodgiest solution ever!
 	private static boolean doublePacketToggle = false;
 
 	public static void init()
 	{
-		protocolManager = ProtocolLibrary.getProtocolManager();
+		ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
 
 		/*protocolManager.addPacketListener(new PacketAdapter(FakeMobs.getInstance(), ListenerPriority.LOWEST,
 			*//*PacketType.Play.Server.SPAWN_ENTITY,
@@ -113,117 +110,104 @@ public class EntityListener implements Listener
 			{
 				try
 				{
-					if(!MobManager.isMobActive())
+					if (!MobManager.isMobActive())
 					{
 						return;
 					}
-					
+
 					PacketContainer packetContainer = event.getPacket();
-					
-					//Only handle boss IDs
-					final StructureModifier<Integer> integers = packetContainer.getIntegers();
 
-					int entityId;
-					if(integers.size() == 0)
-					{
-						return;
-					}
-
-					try
-					{
-						//Attempt to avoid handling any off-hand interacts
-						List<?> handValues;
-						if(packetContainer.getHands().size() > 0 &&
-							!(handValues = packetContainer.getHands().getValues()).isEmpty() &&
-							handValues.get(0) == EnumWrappers.Hand.OFF_HAND)
-						{
-							return;
-						}
-					}
-					catch(Exception e)
-					{
-						//Ignore.
-					}
-					
-					entityId = packetContainer.getIntegers().read(0);
-					IFakeMob baseMob = MobManager.getMob(entityId);
-					//if(!MobManager.isMobId(entityId))
-					if(baseMob == null)
-					{
-						// Attempt to retrieve a delegate mob for this mob
-						baseMob = MobManager.getDelegateMob(entityId);
-						if(baseMob == null)
-						{
-							return;
-						}
-					}
-					
-					//Debug
-					{
-						/*Entity entity = protocolManager.getEntityFromID(event.getPlayer().getWorld(), entityId);
-						if(entity != null)
-						{
-							BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
-							return;
-						}*/
-						
-						//Location entityLocation = event.getPlayer().getLocation();
-						Chunk playerAt = event.getPlayer().getLocation().getChunk();
-						int chunkX = playerAt.getX(), chunkZ = playerAt.getZ();
-						
-						//if(!(chunkX == 25 && chunkZ == -2) || !(chunkX == 25 && chunkZ == -1))
-						if(!baseMob.isAtLocation(chunkX, chunkZ))
-						{
-							//BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
-							return;
-						}
-					}
-					
-					//Can't be cancelled/quit from here on in
-					event.setCancelled(true);
-					
 					boolean isAttack;
-					if(packetContainer.getEntityUseActions().size() > 0)
+					final StructureModifier<WrappedEnumEntityUseAction> useActionStructure = packetContainer.getEnumEntityUseActions();
+					if (useActionStructure.size() > 0)
 					{
-						try
+						List<WrappedEnumEntityUseAction> useActions = useActionStructure.getValues();
+						if (useActions == null || useActions.isEmpty())
 						{
-							packetContainer.getEntityUseActions().getValues().isEmpty();
-						}
-						catch(NullPointerException e)
-						{
-							//Ignore.
-							BUtil.log("Ignored second interact packet.");
 							return;
 						}
-						
-						isAttack = packetContainer.getEntityUseActions().getValues().get(0) == EnumWrappers.EntityUseAction.ATTACK;
+
+						EnumWrappers.EntityUseAction useAction = useActions.get(0).getAction();
+						if (useAction == EnumWrappers.EntityUseAction.INTERACT)
+						{
+							return;
+						}
+
+						isAttack = useActions.get(0).getAction() == EnumWrappers.EntityUseAction.ATTACK;
 					}
 					else
 					{
 						isAttack = false;
 					}
-				
+
+					try
+					{
+						//Attempt to avoid handling any off-hand interacts
+						StructureModifier<EnumWrappers.Hand> handStructure = packetContainer.getHands();
+						if (handStructure.size() > 0)
+						{
+							List<?> handValues = handStructure.getValues();
+							BUtil.log(handValues.toString());
+							if (!handValues.isEmpty() && handValues.get(0) == EnumWrappers.Hand.OFF_HAND)
+							{
+								return;
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						//Ignore.
+					}
+
+					int entityId = packetContainer.getIntegers().read(0);
+					IFakeMob baseMob = MobManager.getMob(entityId);
+					if (baseMob == null)
+					{
+						// Attempt to retrieve a delegate mob for this mob
+						baseMob = MobManager.getDelegateMob(entityId);
+						if (baseMob == null)
+						{
+							//BUtil.log("Could not find mob for id=" + entityId);
+							return;
+						}
+					}
+
+					//Debug
+					{
+						final Location playerAt = event.getPlayer().getLocation();
+						int chunkX = (int) playerAt.getX() >> 4, chunkZ = (int) playerAt.getZ() >> 4;
+
+						if (!baseMob.isAtLocation(chunkX, chunkZ))
+						{
+							//BUtil.logError("FakeMob id '" + entityId + "' was blocking damage outside its region.");
+							return;
+						}
+					}
+
+					//Can't be cancelled/quit from here on in
+					event.setCancelled(true);
+
 					/*
 					 * Pretty much a flip-flop switch that denies one of the two duplicate
 					 * packets that come with a right-click on an entity.
 					 */
-					if(!isAttack)
+					if (!isAttack)
 					{
-						if(doublePacketToggle)
+						if (doublePacketToggle)
 						{
 							doublePacketToggle = false;
 							return;
 						}
-						
+
 						doublePacketToggle = true;
 					}
 
 					//Make sure any sub-action functions on the main thread as to not
 					//cause more issues than it's worth.
 					final IFakeMob baseMobFinal = baseMob;
-					Bukkit.getScheduler().runTask(FakeMobs.getInstance(), () ->
+					RunnableShorthand.forPlugin(FakeMobs.getInstance()).with(() ->
 					{
-						if(isAttack)
+						if (isAttack)
 						{
 							baseMobFinal.onAttack(event.getPlayer());
 						}
@@ -231,17 +215,13 @@ public class EntityListener implements Listener
 						{
 							baseMobFinal.onRightClick(event.getPlayer());
 						}
-					});
-				}
-				catch(Throwable e)
+					}).ensureSync();
+				} catch (Throwable e)
 				{
 					e.printStackTrace();
 				}
 			}
-			
 		});
-
-		//bossListener.start();
 	}
 
 	public static void destruct()
